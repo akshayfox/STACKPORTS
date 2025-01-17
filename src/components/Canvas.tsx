@@ -51,7 +51,7 @@ const Canvas: React.FC = () => {
   return (
     <div 
       className="relative bg-white shadow-lg rounded-lg overflow-hidden  mx-auto  "
-      onClick={handleCanvasClick}
+      
       style={{
         width: activeTemplate.canvasSize.width,
         height: activeTemplate.canvasSize.height,
