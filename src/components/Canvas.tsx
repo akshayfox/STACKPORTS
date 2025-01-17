@@ -4,8 +4,7 @@ import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor, MouseSe
 import CanvasElement from './CanvasElement';
 
 const Canvas: React.FC = () => {
-  const { activeTemplate, updateElement } = useEditorStore();
-  console.log(activeTemplate,'activeTemplate')
+  const { activeTemplate, updateElement,setSelectedElement } = useEditorStore();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -44,9 +43,15 @@ const Canvas: React.FC = () => {
 
   if (!activeTemplate) return null;
 
+
+
+  const handleCanvasClick = () => {
+    setSelectedElement(null); // Deselect the element
+  };
   return (
     <div 
       className="relative bg-white shadow-lg rounded-lg overflow-hidden  mx-auto  "
+      onClick={handleCanvasClick}
       style={{
         width: activeTemplate.canvasSize.width,
         height: activeTemplate.canvasSize.height,
@@ -55,7 +60,7 @@ const Canvas: React.FC = () => {
         transformOrigin: 'top left',
       }}
     >
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd} >
         {activeTemplate.elements.map((element) => (
           <CanvasElement key={element.id} element={element} />
         ))}

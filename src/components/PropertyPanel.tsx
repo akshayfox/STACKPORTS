@@ -122,6 +122,17 @@ const PropertyPanel: React.FC = () => {
           min="10"
         />
       </div>
+      <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Color
+            </label>
+            <input
+              type="color"
+              value={selectedElement.style.color}
+              onChange={(e) => handleStyleChange("backgroundColor", e.target.value)}
+              className="w-full h-10 p-1 border rounded-md"
+            />
+          </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

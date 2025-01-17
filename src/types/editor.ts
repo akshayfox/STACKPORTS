@@ -9,6 +9,7 @@ export interface Element {
     height: number;
     rotation: number;
     fontSize?: number;
+    shapeType: string;
     color?: string;
     backgroundColor?: string;
   };
