@@ -1,7 +1,15 @@
-import React, { useState, useRef } from 'react';
-import { useEditorStore } from '../store/editorStore';
-import { Type, Image, Square, Circle, Triangle, Trash2, ChevronDown } from 'lucide-react';
-import { nanoid } from 'nanoid';
+import React, { useState, useRef } from "react";
+import { useEditorStore } from "../store/editorStore";
+import {
+  Type,
+  Image,
+  Square,
+  Circle,
+  Triangle,
+  Trash2,
+  ChevronDown,
+} from "lucide-react";
+import { nanoid } from "nanoid";
 
 interface ElementStyle {
   x: number;
@@ -18,7 +26,7 @@ interface ElementStyle {
 
 interface EditorElement {
   id: string;
-  type: 'text' | 'image' | 'shape';
+  type: "text" | "image" | "shape";
   content: string;
   style: ElementStyle;
 }
@@ -31,8 +39,8 @@ const Toolbar = () => {
   const addText = () => {
     const element: EditorElement = {
       id: nanoid(),
-      type: 'text',
-      content: 'Double click to edit',
+      type: "text",
+      content: "Double click to edit",
       style: {
         x: 100,
         y: 100,
@@ -40,9 +48,9 @@ const Toolbar = () => {
         height: 50,
         rotation: 0,
         fontSize: 16,
-        color: '#000000',
-        shapeType: 'text',
-        backgroundColor: 'transparent',
+        color: "#000000",
+        shapeType: "text",
+        backgroundColor: "transparent",
       },
     };
     addElement(element);
@@ -55,7 +63,7 @@ const Toolbar = () => {
       reader.onload = (event) => {
         const element: EditorElement = {
           id: nanoid(),
-          type: 'image',
+          type: "image",
           content: event.target?.result as string,
           style: {
             x: 100,
@@ -63,10 +71,10 @@ const Toolbar = () => {
             width: 200,
             height: 200,
             rotation: 0,
-            shapeType: 'image',
-            backgroundColor: 'transparent',
+            shapeType: "image",
+            backgroundColor: "transparent",
             fontSize: 16,
-            color: '#000000',
+            color: "#000000",
           },
         };
         addElement(element);
@@ -75,27 +83,39 @@ const Toolbar = () => {
     }
     // Reset the input value so the same file can be selected again
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const getShapePath = (shapeType: string, width: number, height: number) => {
     switch (shapeType) {
-      case 'rectangle':
+      case "rectangle":
         return `M 0 0 H ${width} V ${height} H 0 Z`;
-      case 'circle':
+      case "circle":
         const rx = width / 2;
         const ry = height / 2;
-        return `M ${width/2} 0 A ${rx} ${ry} 0 1 0 ${width/2} ${height} A ${rx} ${ry} 0 1 0 ${width/2} 0 Z`;
-      case 'triangle':
-        return `M ${width/2} 0 L ${width} ${height} L 0 ${height} Z`;
-      case 'star':
+        return `M ${width / 2} 0 A ${rx} ${ry} 0 1 0 ${
+          width / 2
+        } ${height} A ${rx} ${ry} 0 1 0 ${width / 2} 0 Z`;
+      case "triangle":
+        return `M ${width / 2} 0 L ${width} ${height} L 0 ${height} Z`;
+      case "star":
         const points = [
-          [50, 0], [61, 35], [98, 35], [68, 57],
-          [79, 91], [50, 70], [21, 91], [32, 57],
-          [2, 35], [39, 35]
-        ].map(([x, y]) => [x * width / 100, y * height / 100]);
-        return `M ${points[0][0]} ${points[0][1]} ${points.slice(1).map(([x, y]) => `L ${x} ${y}`).join(' ')} Z`;
+          [50, 0],
+          [61, 35],
+          [98, 35],
+          [68, 57],
+          [79, 91],
+          [50, 70],
+          [21, 91],
+          [32, 57],
+          [2, 35],
+          [39, 35],
+        ].map(([x, y]) => [(x * width) / 100, (y * height) / 100]);
+        return `M ${points[0][0]} ${points[0][1]} ${points
+          .slice(1)
+          .map(([x, y]) => `L ${x} ${y}`)
+          .join(" ")} Z`;
       default:
         return `M 0 0 H ${width} V ${height} H 0 Z`;
     }
@@ -104,21 +124,21 @@ const Toolbar = () => {
   const addShape = (shapeType: string) => {
     const width = 100;
     const height = 100;
-    
+
     const element: EditorElement = {
       id: nanoid(),
-      type: 'shape',
-      content: '',
+      type: "shape",
+      content: "",
       style: {
         x: 100,
         y: 100,
         width,
         height,
         rotation: 0,
-        backgroundColor: '#e2e8f0',
+        backgroundColor: "#e2e8f0",
         shapeType,
         fontSize: 16,
-        color: '#000000',
+        color: "#000000",
         path: getShapePath(shapeType, width, height),
       },
     };
@@ -140,52 +160,50 @@ const Toolbar = () => {
       <div className="space-y-2">
         <button
           onClick={addText}
-          className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors"
-        >
+          className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors">
           <Type size={20} /> Add Text
         </button>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors"
-        >
+          className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors">
           <Image size={20} /> Upload Image
         </button>
-        
+
         <div className="relative">
           <button
             onClick={() => setShowShapeMenu(!showShapeMenu)}
-            className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors justify-between"
-          >
+            className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors justify-between">
             <div className="flex items-center gap-3">
               <Square size={20} /> Add Shape
             </div>
-            <ChevronDown size={16} className={`transform transition-transform ${showShapeMenu ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              size={16}
+              className={`transform transition-transform ${
+                showShapeMenu ? "rotate-180" : ""
+              }`}
+            />
           </button>
-          
+
           {showShapeMenu && (
             <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
               <button
-                onClick={() => addShape('rectangle')}
-                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2"
-              >
+                onClick={() => addShape("rectangle")}
+                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
                 <Square size={16} /> Rectangle
               </button>
               <button
-                onClick={() => addShape('circle')}
-                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2"
-              >
+                onClick={() => addShape("circle")}
+                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
                 <Circle size={16} /> Circle
               </button>
               <button
-                onClick={() => addShape('triangle')}
-                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2"
-              >
+                onClick={() => addShape("triangle")}
+                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
                 <Triangle size={16} /> Triangle
               </button>
               <button
-                onClick={() => addShape('star')}
-                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2"
-              >
+                onClick={() => addShape("star")}
+                className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
                 <span className="text-lg">★</span> Star
               </button>
             </div>
@@ -195,12 +213,18 @@ const Toolbar = () => {
         {selectedElement && (
           <button
             onClick={() => removeElement(selectedElement.id)}
-            className="w-full p-3 hover:bg-red-50 text-red-600 rounded-lg flex items-center gap-3 transition-colors mt-4"
-          >
+            className="w-full p-3 hover:bg-red-50 text-red-600 rounded-lg flex items-center gap-3 transition-colors mt-4">
             <Trash2 size={20} /> Delete Element
           </button>
         )}
       </div>
+
+      <button
+        onClick={addText}
+        className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors">
+        <Type size={20} />
+        Bulk Creation
+      </button>
     </div>
   );
 };
