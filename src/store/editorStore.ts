@@ -11,9 +11,11 @@ interface EditorStore {
   removeElement: (elementId: string) => void;
 }
 
+
 export const useEditorStore = create<EditorStore>((set) => ({
   activeTemplate: null,
   selectedElement: null,
+  
   
   
   setActiveTemplate: (template) => set({ activeTemplate: template }),
@@ -31,7 +33,7 @@ export const useEditorStore = create<EditorStore>((set) => ({
         : null,
       selectedElement: state.selectedElement?.id === elementId
         ? { ...state.selectedElement, ...updates }
-        : state.selectedElement, // Update selectedElement if it matches elementId
+        : state.selectedElement,
     })),
   addElement: (element) =>
     set((state) => ({
