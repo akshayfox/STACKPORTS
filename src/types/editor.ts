@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 export interface Element {
   id: string;
   type: 'text' | 'image' | 'shape';
@@ -16,6 +18,7 @@ export interface Element {
 }
 
 export interface Template {
+  _id?:string,
   id: string;
   name: string;
   thumbnail?:string;
@@ -24,4 +27,25 @@ export interface Template {
     width: number;
     height: number;
   };
+}
+
+
+export interface ContextMenuState {
+  x: number;
+  y: number;
+  visible: boolean;
+  templateId: string | null;  // Allow null here
+}
+
+export interface ContextMenuItem {
+  icon: LucideIcon;
+  label: string;
+}
+
+export interface ContextMenuProps {
+  x: number;
+  y: number;
+  visible: boolean;
+  onClose: () => void;
+  onOptionClick: (action: string) => void;
 }

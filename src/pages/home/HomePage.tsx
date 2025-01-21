@@ -18,16 +18,20 @@ function HomePage() {
               <span className="font-bold text-xl">DesignPro</span>
             </div>
             <nav className="hidden md:flex space-x-8">
-  <Link to="/templates" className="text-gray-600 hover:text-gray-900">
-    Templates
-  </Link>
-  <Link to="/features" className="text-gray-600 hover:text-gray-900">
-    Features
-  </Link>
-  <Link to="/pricing" className="text-gray-600 hover:text-gray-900">
-    Pricing
-  </Link>
-</nav>
+              <Link
+                to="/templates"
+                className="text-gray-600 hover:text-gray-900">
+                Templates
+              </Link>
+              <Link
+                to="/features"
+                className="text-gray-600 hover:text-gray-900">
+                Features
+              </Link>
+              <Link to="/pricing" className="text-gray-600 hover:text-gray-900">
+                Pricing
+              </Link>
+            </nav>
             <div className="flex items-center space-x-4">
               <button className="text-gray-600 hover:text-gray-900">
                 Sign in

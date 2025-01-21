@@ -6,7 +6,7 @@ import {
   ChevronDown,
   Home,
   Settings,
-  Save as SaveIcon, // Add Save Icon import
+  Save as SaveIcon,
 } from "lucide-react";
 import { useEditorStore } from "../../store/editorStore";
 import Toolbar from "../../components/Toolbar";
@@ -17,8 +17,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { Template } from "../../types/editor";
 import ZoomableCanvas from "../../components/ZoomableCanvas ";
-import html2canvas from 'html2canvas';
-
+import html2canvas from "html2canvas";
 
 type LocationState = {
   width: number;
@@ -26,7 +25,10 @@ type LocationState = {
 };
 
 const saveDesign = async (design: Template): Promise<Template> => {
-  const response = await axios.post("http://localhost:3001/api/designs", design);
+  const response = await axios.post(
+    `${import.meta.env.VITE_BASE_URL}/designs`,
+    design
+  );
   return response.data;
 };
 
@@ -51,13 +53,12 @@ const EditorPage = () => {
     });
   }, [location.state, setActiveTemplate]);
 
-
-
   const captureCanvas = async (): Promise<string> => {
-    if (!canvasRef.current) throw new Error('Canvas not found');
-
-    const canvasContent = canvasRef.current.querySelector('.bg-white.rounded-lg.shadow-xl');
-    if (!canvasContent) throw new Error('Canvas content not found');
+    if (!canvasRef.current) throw new Error("Canvas not found");
+    const canvasContent = canvasRef.current.querySelector(
+      ".bg-white.rounded-lg.shadow-xl"
+    );
+    if (!canvasContent) throw new Error("Canvas content not found");
 
     try {
       const canvas = await html2canvas(canvasContent as HTMLElement, {
@@ -69,17 +70,16 @@ const EditorPage = () => {
         width: activeTemplate?.canvasSize.width,
         height: activeTemplate?.canvasSize.height,
       });
-
-      return canvas.toDataURL('image/png');
+      return canvas.toDataURL("image/png");
     } catch (error) {
-      console.error('Error capturing canvas:', error);
+      console.error("Error capturing canvas:", error);
       throw error;
     }
   };
 
   const { mutate: saveTemplate, isPending } = useMutation({
     mutationFn: saveDesign,
-    onSuccess: () => {  
+    onSuccess: () => {
       alert("Design saved successfully!");
     },
     onError: (error) => {
@@ -93,39 +93,32 @@ const EditorPage = () => {
       return;
     }
     try {
-      const thumbnail = await captureCanvas(); // Capture canvas as base64 image
+      const thumbnail = await captureCanvas();
       const formData = new FormData();
-      
-      // Convert the base64 image to a Uint8Array (PNG)
-      const byteArray = new Uint8Array(atob(thumbnail.split(',')[1]).split('').map(char => char.charCodeAt(0)));
-      const blob = new Blob([byteArray], { type: 'image/png' });
-      
-      // Append the PNG image to FormData
-      formData.append('file', blob, 'thumbnail.png');
-      formData.append('name', activeTemplate.name);
-      formData.append('templateData', JSON.stringify(activeTemplate));
-  
-      // Send the formData with the image to the server
-      const response = await fetch('http://localhost:3001/api/designs', {
-        method: 'POST',
+      const byteArray = new Uint8Array(
+        atob(thumbnail.split(",")[1])
+          .split("")
+          .map((char) => char.charCodeAt(0))
+      );
+      const blob = new Blob([byteArray], { type: "image/png" });
+      formData.append("file", blob, "thumbnail.png");
+      formData.append("name", activeTemplate.name);
+      formData.append("templateData", JSON.stringify(activeTemplate));
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs`, {
+        method: "POST",
         body: formData,
       });
-  
       const result = await response.json();
-  
       if (response.ok) {
-        alert('Design saved successfully!');
+        alert("Design saved successfully!");
       } else {
         alert(`Failed to save design: ${result.error}`);
       }
     } catch (error) {
-      console.error('Save error:', error);
-      alert('Failed to save the design');
+      console.error("Save error:", error);
+      alert("Failed to save the design");
     }
   };
-  
-  
-  
 
   return (
     <div className="min-h-screen bg-white">
@@ -162,8 +155,7 @@ const EditorPage = () => {
             <button
               onClick={handleSave}
               className="px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
-              disabled={isPending}
-            >
+              disabled={isPending}>
               {isPending ? "Saving..." : "Save Design"}
             </button>
           </div>
@@ -180,7 +172,9 @@ const EditorPage = () => {
             <button className="px-3 py-1 text-sm text-gray-700 hover:bg-white rounded-md transition-colors">
               View
             </button>
-            <button onClick={handleSave} className="px-3 py-1 text-sm text-gray-700 hover:bg-white rounded-md transition-colors">
+            <button
+              onClick={handleSave}
+              className="px-3 py-1 text-sm text-gray-700 hover:bg-white rounded-md transition-colors">
               Save
             </button>
           </div>
@@ -191,7 +185,9 @@ const EditorPage = () => {
         <div
           className={`absolute md:relative w-[210px] bg-white border-r border-gray-200 
           flex flex-col h-full z-40 transition-transform duration-300
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+          ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0`}>
           <div className="p-4 border-b border-gray-200">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -218,7 +214,9 @@ const EditorPage = () => {
         <div
           className={`absolute right-0 md:relative w-[300px] bg-white border-l border-gray-200 
           flex flex-col h-full z-40 transition-transform duration-300
-          ${isPropertyPanelOpen ? "translate-x-0" : "translate-x-full"} md:translate-x-0`}>
+          ${
+            isPropertyPanelOpen ? "translate-x-0" : "translate-x-full"
+          } md:translate-x-0`}>
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-gray-700">Properties</span>
