@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { ContextMenuState, Template } from "@/types/editor";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -37,7 +38,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
   visible,
-  onClose,
   onOptionClick,
 }) => {
   if (!visible) return null;
@@ -48,7 +48,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     { icon: Share, label: "Share" },
     { icon: Trash, label: "Delete" },
   ];
-
   return (
     <div
       className="fixed bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
@@ -71,6 +70,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 };
 
 const TemplatePage: React.FC = () => {
+  const navigate=useNavigate()
+
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     x: 0,
@@ -111,19 +112,19 @@ const TemplatePage: React.FC = () => {
     const handleClickOutside = () => {
       setContextMenu((prev) => ({ ...prev, visible: false }));
     };
-
     if (contextMenu.visible) {
       document.addEventListener("click", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, [contextMenu.visible]);
 
+
   const handleContextMenuOption = async (action: string) => {
     switch (action) {
       case "edit":
+        navigate(`/editor/${contextMenu.templateId}`)
         break;
       case "duplicate":
         break;
@@ -185,7 +186,7 @@ const TemplatePage: React.FC = () => {
               className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
               onMouseEnter={() => setHoveredId(template.id)}
               onMouseLeave={() => setHoveredId(null)}
-              onContextMenu={(e) => handleRightClick(e, template.id)}>
+              onContextMenu={(e) => handleRightClick(e, template._id as string)}>
               {template.thumbnail && (
                 <div className="overflow-hidden rounded-md">
                   <img

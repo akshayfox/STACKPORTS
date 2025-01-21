@@ -10,7 +10,7 @@ const App = () => {
       {/* <Layout> */}
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/editor" element={<EditorPage />} />
+          <Route path="/editor/:id?" element={<EditorPage />} />
           <Route path="/templates" element={<TemplatePage/>} />
 
         </Routes>
