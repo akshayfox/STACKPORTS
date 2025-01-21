@@ -18,6 +18,7 @@ export interface Element {
 export interface Template {
   id: string;
   name: string;
+  thumbnail?:string;
   elements: Element[];
   canvasSize: {
     width: number;

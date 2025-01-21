@@ -1,5 +1,5 @@
 import { Palette, Wand2, Users, Sparkles, ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function HomePage() {
   const navigate = useNavigate();
@@ -18,16 +18,16 @@ function HomePage() {
               <span className="font-bold text-xl">DesignPro</span>
             </div>
             <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-gray-600 hover:text-gray-900">
-                Templates
-              </a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">
-                Features
-              </a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">
-                Pricing
-              </a>
-            </nav>
+  <Link to="/templates" className="text-gray-600 hover:text-gray-900">
+    Templates
+  </Link>
+  <Link to="/features" className="text-gray-600 hover:text-gray-900">
+    Features
+  </Link>
+  <Link to="/pricing" className="text-gray-600 hover:text-gray-900">
+    Pricing
+  </Link>
+</nav>
             <div className="flex items-center space-x-4">
               <button className="text-gray-600 hover:text-gray-900">
                 Sign in
