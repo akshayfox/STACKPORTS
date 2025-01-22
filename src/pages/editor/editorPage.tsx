@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import {
   Menu,
   Search,
@@ -71,7 +72,7 @@ const EditorPage: React.FC = () => {
       const canvasSize = locationState || DEFAULT_CANVAS_SIZE;
       
       setActiveTemplate({
-        id: crypto.randomUUID(),
+        id: uuidv4(),         
         name: "Untitled Design",
         elements: [],
         canvasSize,

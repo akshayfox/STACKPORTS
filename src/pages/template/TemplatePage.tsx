@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,17 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { ContextMenuState, Template } from "@/types/editor";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -33,6 +43,15 @@ const fetchDesigns = async (): Promise<Template[]> => {
   const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/designs`);
   return response.data.designs;
 };
+
+const deleteTemplate = async (templateId: string) => {
+  const response = await axios.delete(
+    `${import.meta.env.VITE_BASE_URL}/designs/${templateId}`
+  );
+  return response.data;
+};
+
+
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
@@ -70,15 +89,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 };
 
 const TemplatePage: React.FC = () => {
-  const navigate=useNavigate()
-
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     x: 0,
     y: 0,
     visible: false,
-    templateId: null, // Initialize with null or appropriate default value
+    templateId: null,
   });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
     data: templates,
@@ -87,6 +107,13 @@ const TemplatePage: React.FC = () => {
   } = useQuery<Template[]>({
     queryKey: ["designs"],
     queryFn: fetchDesigns,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteTemplate,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["designs"] });
+    },
   });
 
   const handleRightClick = (event: React.MouseEvent, templateId: string) => {
@@ -104,7 +131,7 @@ const TemplatePage: React.FC = () => {
       x,
       y,
       visible: true,
-      templateId, // Set the templateId correctly when the right-click happens
+      templateId,
     });
   };
 
@@ -121,21 +148,30 @@ const TemplatePage: React.FC = () => {
   }, [contextMenu.visible]);
 
 
+  
   const handleContextMenuOption = async (action: string) => {
     switch (action) {
       case "edit":
-        navigate(`/editor/${contextMenu.templateId}`)
+        navigate(`/editor/${contextMenu.templateId}`);
         break;
       case "duplicate":
         break;
       case "share":
         break;
       case "delete":
+        setShowDeleteDialog(true);
         break;
       default:
         break;
     }
     setContextMenu((prev) => ({ ...prev, visible: false }));
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (contextMenu.templateId) {
+      await deleteMutation.mutateAsync(contextMenu.templateId);
+    }
+    setShowDeleteDialog(false);
   };
 
   if (isLoading) return <div>Loading designs...</div>;
@@ -179,7 +215,7 @@ const TemplatePage: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
           {templates.map((template: Template) => (
             <Card
               key={template?._id}
@@ -210,6 +246,26 @@ const TemplatePage: React.FC = () => {
         onClose={() => setContextMenu((prev) => ({ ...prev, visible: false }))}
         onOptionClick={handleContextMenuOption}
       />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              template.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
