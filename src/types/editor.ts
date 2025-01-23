@@ -2,7 +2,7 @@ import { LucideIcon } from "lucide-react";
 
 export interface Element {
   id: string;
-  type: 'text' | 'image' | 'shape';
+  type: 'text' | 'image' | 'shape' | 'textarea' | 'button';
   content: string;
   style: {
     x: number;
@@ -15,7 +15,10 @@ export interface Element {
     color?: string;
     backgroundColor?: string;
   };
+  placeholder?: string;  // Add placeholder for text inputs and textareas
+  label?: string;       // Add label for form elements like text inputs and buttons
 }
+
 
 export interface Template {
   _id?:string,
@@ -27,6 +30,7 @@ export interface Template {
     width: number;
     height: number;
   };
+  
 }
 
 

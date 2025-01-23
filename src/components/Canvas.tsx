@@ -3,10 +3,10 @@ import { useEditorStore } from '../store/editorStore';
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor, MouseSensor, TouchSensor } from '@dnd-kit/core';
 import CanvasElement from './CanvasElement';
 
-const Canvas: React.FC = () => {
-  const { activeTemplate, updateElement,setSelectedElement,selectedElement ,removeElement} = useEditorStore();
-  console.log(activeTemplate,'activeTemplate')
-  
+const Canvas: React.FC<{ drag?: boolean }> = ({ drag = true }) => {
+  const { activeTemplate, updateElement, setSelectedElement, selectedElement, removeElement } = useEditorStore();
+  console.log(activeTemplate, 'activeTemplate');
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -28,7 +28,7 @@ const Canvas: React.FC = () => {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, delta } = event;
-    
+
     if (active) {
       const element = activeTemplate?.elements.find(el => el.id === active.id);
       if (element) {
@@ -45,23 +45,21 @@ const Canvas: React.FC = () => {
 
   if (!activeTemplate) return null;
 
-
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Delete' && selectedElement) {
       removeElement(selectedElement.id);
     }
   };
 
-
-
   const handleCanvasClick = () => {
     setSelectedElement(null);
   };
+
   return (
-    <div 
-      className="relative bg-white shadow-lg rounded-lg overflow-hidden  mx-auto  "
+    <div
+      className="relative bg-white shadow-lg rounded-lg overflow-hidden mx-auto"
       onClick={handleCanvasClick}
-      onKeyDown={handleKeyDown} 
+      onKeyDown={handleKeyDown}
       style={{
         width: activeTemplate.canvasSize.width,
         height: activeTemplate.canvasSize.height,
@@ -70,11 +68,17 @@ const Canvas: React.FC = () => {
         transformOrigin: 'top left',
       }}
     >
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        {activeTemplate.elements.map((element) => (
+      {drag ? (
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          {activeTemplate.elements.map((element) => (
+            <CanvasElement key={element.id} element={element} />
+          ))}
+        </DndContext>
+      ) : (
+        activeTemplate.elements.map((element) => (
           <CanvasElement key={element.id} element={element} />
-        ))}
-      </DndContext>
+        ))
+      )}
     </div>
   );
 };
