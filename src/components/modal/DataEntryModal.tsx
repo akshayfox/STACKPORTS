@@ -7,14 +7,25 @@ import {
 } from "@/components/ui/dialog";
 import { Element, Form, Template } from "@/types/editor";
 import Canvas from "../Canvas";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import { useEditorStore } from "@/store/editorStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 interface FormgenerateModalProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   template: Template | null;
 }
+
+
+const fetchForm = async (id: string): Promise<Form> => {
+    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/form/${id}`,{
+        params:{templateId:id}
+    }); // Fetch a single form by ID
+    console.log(response,'response')
+    return response.data.forms[0]||[]; // Assuming the API returns { form: {...} }
+  };
+  
 
 function DataEntryModal({
   open,
@@ -35,6 +46,22 @@ function DataEntryModal({
     }
   }, [selectedElement]);
 
+
+
+  const {
+    data: form,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Form>({
+    queryKey: ["form", template?._id],
+    queryFn: () => fetchForm(template?._id as string),
+    enabled: !!open && !!template?._id, // Only fetch if the modal is open and template._id exists
+  });
+  
+  console.log(form,"FORM")
+
+  
 
 
   const handleRemoveElement = (id: string) => {
