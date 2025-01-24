@@ -4,7 +4,7 @@ import { Element, Template } from '../types/editor';
 interface EditorStore {
   activeTemplate: Template | null;
   selectedElement: Element | null;
-  setActiveTemplate: (template: Template) => void;
+  setActiveTemplate: (template: Template | null) => void;
   setSelectedElement: (element: Element | null) => void;
   updateElement: (elementId: string, updates: Partial<Element>) => void;
   addElement: (element: Element) => void;

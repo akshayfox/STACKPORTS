@@ -47,25 +47,23 @@ const api = {
 
   async uploadThumbnail(
     formData: FormData
-  ): Promise<{ success: boolean; error?: string ,designId?:string}> {
+  ): Promise<{ success: boolean; error?: string; designId?: string }> {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs`, {
       method: "POST",
       body: formData,
     });
     const result = await response.json();
-    console.log(result,'result')
     return {
       success: response.ok,
       error: !response.ok ? result.error : undefined,
       designId: response.ok ? result.design._id : undefined,
-      
     };
   },
 
   async updateDesign(
     id: string,
     formData: FormData
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<{ success: boolean; error?: string; designId?: string }> {
     const response = await fetch(
       `${import.meta.env.VITE_BASE_URL}/designs/${id}`,
       {
@@ -81,19 +79,23 @@ const api = {
   },
 };
 
+
 const EditorPage: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { setActiveTemplate, activeTemplate } = useEditorStore();
+  console.log(activeTemplate, "activeTemplate");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
 
-
   useEffect(() => {
     saveInitialDesign();
-  }, [location.state, setActiveTemplate, id]);
 
+    return () => {
+      setActiveTemplate(null);
+    };
+  }, [location.state, setActiveTemplate, id]);
 
   const saveInitialDesign = async () => {
     if (!id) {
@@ -107,7 +109,7 @@ const EditorPage: React.FC = () => {
       };
       setActiveTemplate(newTemplate);
       try {
-      const thumbnail = await captureCanvas(canvasRef, activeTemplate);
+        const thumbnail = await captureCanvas(canvasRef, activeTemplate);
         const formData = new FormData();
         const base64Data = thumbnail.split(",")[1];
         const byteArray = new Uint8Array(
@@ -121,9 +123,8 @@ const EditorPage: React.FC = () => {
         formData.append("templateData", JSON.stringify(newTemplate));
         const result = await api.uploadThumbnail(formData);
         if (result.designId) {
-          localStorage.setItem('design_id', result.designId);
+          localStorage.setItem("design_id", result.designId);
           window.history.replaceState(null, "", `/editor/${result.designId}`);
-
         }
       } catch (error) {
         console.error("Initial save error:", error);
@@ -144,37 +145,6 @@ const EditorPage: React.FC = () => {
     enabled: !!id,
   });
 
-
-
-
-  // const captureCanvas = async (): Promise<string> => {
-  //   const canvasContent = canvasRef.current?.querySelector<HTMLElement>(
-  //     ".bg-white.rounded-lg.shadow-xl"
-  //   );
-  //   if (!canvasContent) {
-  //     throw new Error("Canvas content not found");
-  //   }
-  //   try {
-  //     const canvas = await html2canvas(canvasContent, {
-  //       scale: 2,
-  //       backgroundColor: null,
-  //       useCORS: true,
-  //       logging: false,
-  //       allowTaint: true,
-  //       width: activeTemplate?.canvasSize.width,
-  //       height: activeTemplate?.canvasSize.height,
-  //     });
-  //     return canvas.toDataURL("image/png");
-  //   } catch (error) {
-  //     console.error("Error capturing canvas:", error);
-  //     throw error;
-  //   }
-  // };
-
-
-
-
-
   const { mutate: saveTemplate, isPending } = useMutation({
     mutationFn: api.saveDesign,
     onSuccess: () => {
@@ -185,8 +155,6 @@ const EditorPage: React.FC = () => {
       alert("Failed to save the design");
     },
   });
-
-
 
   const handleSave = async () => {
     if (!activeTemplate) {
@@ -205,9 +173,11 @@ const EditorPage: React.FC = () => {
       formData.append("file", blob, "thumbnail.png");
       formData.append("name", activeTemplate.name);
       formData.append("templateData", JSON.stringify(activeTemplate));
-      const result = await api.uploadThumbnail(formData);
+      const result = id
+        ? await api.updateDesign(id, formData)
+        : await api.uploadThumbnail(formData);
       if (result.designId) {
-        localStorage.setItem('design_id', result.designId);
+        localStorage.setItem("design_id", result.designId);
       }
       if (result.success) {
         alert("Design saved successfully!");
@@ -219,9 +189,6 @@ const EditorPage: React.FC = () => {
       alert("Failed to save the design");
     }
   };
-
-
-
 
   if (isError) {
     return (

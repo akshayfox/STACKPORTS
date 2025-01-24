@@ -12,6 +12,9 @@ export interface DesignElement {
 
 
 
+
+
+
 export type DownloadType = 'json' | 'image';
 
 export const downloadDesign = (template: Template | null): void => {
@@ -30,6 +33,9 @@ export const downloadDesign = (template: Template | null): void => {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
+
+
+
 
 export const downloadAsImage = async (canvasRef: React.RefObject<HTMLCanvasElement>): Promise<void> => {
   if (!canvasRef.current) {
