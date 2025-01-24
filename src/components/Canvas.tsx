@@ -5,7 +5,6 @@ import CanvasElement from './CanvasElement';
 
 const Canvas: React.FC<{ drag?: boolean }> = ({ drag = true }) => {
   const { activeTemplate, updateElement, setSelectedElement, selectedElement, removeElement } = useEditorStore();
-  console.log(activeTemplate, 'activeTemplate');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

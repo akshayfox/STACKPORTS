@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import {
   Menu,
   Search,
@@ -44,12 +44,31 @@ const api = {
     );
     return response.data.design;
   },
-  
-  async uploadThumbnail(formData: FormData): Promise<{ success: boolean; error?: string }> {
+
+  async uploadThumbnail(formData: FormData
+): Promise<{ success: boolean; error?: string }> {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs`, {
       method: "POST",
       body: formData,
     });
+    const result = await response.json();
+    return {
+      success: response.ok,
+      error: !response.ok ? result.error : undefined,
+    };
+  },
+
+  async updateDesign(
+    id: string,
+    formData: FormData
+  ): Promise<{ success: boolean; error?: string }> {
+    const response = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/designs/${id}`,
+      {
+        method: "PUT",
+        body: formData,
+      }
+    );
     const result = await response.json();
     return {
       success: response.ok,
@@ -65,27 +84,55 @@ const EditorPage: React.FC = () => {
   const { setActiveTemplate, activeTemplate } = useEditorStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
+  console.log(activeTemplate, "activeTemplate");
 
   useEffect(() => {
+    saveInitialDesign();
+  }, [location.state, setActiveTemplate, id]);
+
+  const saveInitialDesign = async () => {
     if (!id) {
       const locationState = location.state as LocationState;
       const canvasSize = locationState || DEFAULT_CANVAS_SIZE;
-      
-      setActiveTemplate({
-        id: uuidv4(),         
+      const newTemplate = {
+        id: uuidv4(),
         name: "Untitled Design",
         elements: [],
         canvasSize,
-      });
+      };
+      setActiveTemplate(newTemplate);
+
+      try {
+        const thumbnail = await captureCanvas();
+        const formData = new FormData();
+        const base64Data = thumbnail.split(",")[1];
+        const byteArray = new Uint8Array(
+          atob(base64Data)
+            .split("")
+            .map((char) => char.charCodeAt(0))
+        );
+        const blob = new Blob([byteArray], { type: "image/png" });
+        formData.append("file", blob, "thumbnail.png");
+        formData.append("name", newTemplate.name);
+        formData.append("templateData", JSON.stringify(newTemplate));
+        await api.uploadThumbnail(formData);
+      } catch (error) {
+        console.error("Initial save error:", error);
+      }
     }
-  }, [location.state, setActiveTemplate, id]);
+  };
 
   const { data: design, isError } = useQuery({
     queryKey: ["design", id],
-    queryFn: () => id ? api.fetchDesign(id).then(design => {
-      setActiveTemplate(design);
-      return design;
-    }) : null,
+    queryFn: () =>
+      id
+        ? api.fetchDesign(id).then((design) => {
+            setActiveTemplate(design);
+            // Auto-save loaded template
+            handleSave();
+            return design;
+          })
+        : null,
     enabled: !!id,
   });
 
@@ -220,7 +267,9 @@ const EditorPage: React.FC = () => {
         <aside
           className={`absolute md:relative w-[210px] bg-white border-r border-gray-200 
           flex flex-col h-full z-40 transition-transform duration-300
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+          ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0`}>
           <div className="p-4 border-b border-gray-200">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -247,7 +296,9 @@ const EditorPage: React.FC = () => {
         <aside
           className={`absolute right-0 md:relative w-[300px] bg-white border-l border-gray-200 
           flex flex-col h-full z-40 transition-transform duration-300
-          ${isPropertyPanelOpen ? "translate-x-0" : "translate-x-full"} md:translate-x-0`}>
+          ${
+            isPropertyPanelOpen ? "translate-x-0" : "translate-x-full"
+          } md:translate-x-0`}>
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-gray-700">Properties</span>

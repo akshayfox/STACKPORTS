@@ -11,6 +11,7 @@ import {
   Trash,
   Share,
   LucideIcon,
+  Plus,
 } from "lucide-react";
 import axios from "axios";
 import { ContextMenuState, Template } from "@/types/editor";
@@ -66,6 +67,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     { icon: Copy, label: "Duplicate" },
     { icon: Share, label: "Share" },
     { icon: Trash, label: "Delete" },
+    { icon: Plus, label: "Create Form" }
   ];
   return (
     <div
