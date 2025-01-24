@@ -26,6 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import DataEntryModal from "@/components/modal/DataEntryModal";
+import { useEditorStore } from "@/store/editorStore";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -52,8 +54,6 @@ const deleteTemplate = async (templateId: string) => {
   return response.data;
 };
 
-
-
 const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
@@ -66,8 +66,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     { icon: Edit, label: "Edit" },
     { icon: Copy, label: "Duplicate" },
     { icon: Share, label: "Share" },
+    { icon: Plus, label: "Create" },
     { icon: Trash, label: "Delete" },
-    { icon: Plus, label: "Create Form" }
   ];
   return (
     <div
@@ -92,15 +92,26 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 const TemplatePage: React.FC = () => {
   const navigate = useNavigate();
+  const {
+    addElement,
+    selectedElement,
+    removeElement,
+    activeTemplate,
+    setActiveTemplate,
+  } = useEditorStore();
+
+  console.log(activeTemplate, "activeTemplate");
+
   const queryClient = useQueryClient();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     x: 0,
     y: 0,
     visible: false,
-    templateId: null,
+    template: null,
   });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDataEntry, setshowDataEntry] = useState(false);
 
   const {
     data: templates,
@@ -118,7 +129,8 @@ const TemplatePage: React.FC = () => {
     },
   });
 
-  const handleRightClick = (event: React.MouseEvent, templateId: string) => {
+  const handleRightClick = (event: React.MouseEvent, template: Template) => {
+    setActiveTemplate(template);
     event.preventDefault();
     const { clientX, clientY } = event;
     const menuWidth = 160;
@@ -133,7 +145,7 @@ const TemplatePage: React.FC = () => {
       x,
       y,
       visible: true,
-      templateId,
+      template,
     });
   };
 
@@ -149,20 +161,27 @@ const TemplatePage: React.FC = () => {
     };
   }, [contextMenu.visible]);
 
-
-  
   const handleContextMenuOption = async (action: string) => {
+    if (!contextMenu.template) {
+      return; // Exit if template is null
+    }
+
     switch (action) {
       case "edit":
-        navigate(`/editor/${contextMenu.templateId}`);
+        navigate(`/editor/${contextMenu.template?._id}`);
         break;
       case "duplicate":
         break;
       case "share":
         break;
+      case "create":
+        console.log("working");
+        setshowDataEntry(true);
+        break;
       case "delete":
         setShowDeleteDialog(true);
         break;
+
       default:
         break;
     }
@@ -170,8 +189,8 @@ const TemplatePage: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (contextMenu.templateId) {
-      await deleteMutation.mutateAsync(contextMenu.templateId);
+    if (contextMenu.template && contextMenu.template._id) {
+      await deleteMutation.mutateAsync(contextMenu.template._id);
     }
     setShowDeleteDialog(false);
   };
@@ -182,9 +201,7 @@ const TemplatePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-       
-      </div>
+      <div className="bg-white border-b"></div>
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
@@ -192,9 +209,9 @@ const TemplatePage: React.FC = () => {
             <Card
               key={template?._id}
               className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
-              onMouseEnter={() => setHoveredId(template.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onContextMenu={(e) => handleRightClick(e, template._id as string)}>
+              // onMouseEnter={() => setHoveredId(template.id)}
+              // onMouseLeave={() => setHoveredId(null)}
+              onContextMenu={(e) => handleRightClick(e, template)}>
               {template.thumbnail && (
                 <div className="overflow-hidden rounded-md">
                   <img
@@ -238,6 +255,12 @@ const TemplatePage: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DataEntryModal
+        open={showDataEntry}
+        setOpen={setshowDataEntry}
+        template={activeTemplate}
+      />
     </div>
   );
 };

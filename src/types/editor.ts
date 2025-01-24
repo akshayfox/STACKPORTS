@@ -51,7 +51,7 @@ export interface ContextMenuState {
   x: number;
   y: number;
   visible: boolean;
-  templateId: string | null;
+  template: Template | null; // Template can be null
 }
 
 export interface ContextMenuItem {
