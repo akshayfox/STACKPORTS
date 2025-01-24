@@ -16,8 +16,8 @@ import { useLocation, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Template } from "../../types/editor";
-import html2canvas from "html2canvas";
 import ZoomableCanvas from "@/components/ZoomableCanvas ";
+import { captureCanvas } from "@/utils/helpers";
 
 interface LocationState {
   width: number;
@@ -45,16 +45,20 @@ const api = {
     return response.data.design;
   },
 
-  async uploadThumbnail(formData: FormData
-): Promise<{ success: boolean; error?: string }> {
+  async uploadThumbnail(
+    formData: FormData
+  ): Promise<{ success: boolean; error?: string ,designId?:string}> {
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs`, {
       method: "POST",
       body: formData,
     });
     const result = await response.json();
+    console.log(result,'result')
     return {
       success: response.ok,
       error: !response.ok ? result.error : undefined,
+      designId: response.ok ? result.design._id : undefined,
+      
     };
   },
 
@@ -84,11 +88,12 @@ const EditorPage: React.FC = () => {
   const { setActiveTemplate, activeTemplate } = useEditorStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
-  console.log(activeTemplate, "activeTemplate");
+
 
   useEffect(() => {
     saveInitialDesign();
   }, [location.state, setActiveTemplate, id]);
+
 
   const saveInitialDesign = async () => {
     if (!id) {
@@ -101,9 +106,8 @@ const EditorPage: React.FC = () => {
         canvasSize,
       };
       setActiveTemplate(newTemplate);
-
       try {
-        const thumbnail = await captureCanvas();
+      const thumbnail = await captureCanvas(canvasRef, activeTemplate);
         const formData = new FormData();
         const base64Data = thumbnail.split(",")[1];
         const byteArray = new Uint8Array(
@@ -115,7 +119,12 @@ const EditorPage: React.FC = () => {
         formData.append("file", blob, "thumbnail.png");
         formData.append("name", newTemplate.name);
         formData.append("templateData", JSON.stringify(newTemplate));
-        await api.uploadThumbnail(formData);
+        const result = await api.uploadThumbnail(formData);
+        if (result.designId) {
+          localStorage.setItem('design_id', result.designId);
+          window.history.replaceState(null, "", `/editor/${result.designId}`);
+
+        }
       } catch (error) {
         console.error("Initial save error:", error);
       }
@@ -128,7 +137,6 @@ const EditorPage: React.FC = () => {
       id
         ? api.fetchDesign(id).then((design) => {
             setActiveTemplate(design);
-            // Auto-save loaded template
             handleSave();
             return design;
           })
@@ -136,29 +144,36 @@ const EditorPage: React.FC = () => {
     enabled: !!id,
   });
 
-  const captureCanvas = async (): Promise<string> => {
-    const canvasContent = canvasRef.current?.querySelector<HTMLElement>(
-      ".bg-white.rounded-lg.shadow-xl"
-    );
-    if (!canvasContent) {
-      throw new Error("Canvas content not found");
-    }
-    try {
-      const canvas = await html2canvas(canvasContent, {
-        scale: 2,
-        backgroundColor: null,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        width: activeTemplate?.canvasSize.width,
-        height: activeTemplate?.canvasSize.height,
-      });
-      return canvas.toDataURL("image/png");
-    } catch (error) {
-      console.error("Error capturing canvas:", error);
-      throw error;
-    }
-  };
+
+
+
+  // const captureCanvas = async (): Promise<string> => {
+  //   const canvasContent = canvasRef.current?.querySelector<HTMLElement>(
+  //     ".bg-white.rounded-lg.shadow-xl"
+  //   );
+  //   if (!canvasContent) {
+  //     throw new Error("Canvas content not found");
+  //   }
+  //   try {
+  //     const canvas = await html2canvas(canvasContent, {
+  //       scale: 2,
+  //       backgroundColor: null,
+  //       useCORS: true,
+  //       logging: false,
+  //       allowTaint: true,
+  //       width: activeTemplate?.canvasSize.width,
+  //       height: activeTemplate?.canvasSize.height,
+  //     });
+  //     return canvas.toDataURL("image/png");
+  //   } catch (error) {
+  //     console.error("Error capturing canvas:", error);
+  //     throw error;
+  //   }
+  // };
+
+
+
+
 
   const { mutate: saveTemplate, isPending } = useMutation({
     mutationFn: api.saveDesign,
@@ -171,12 +186,14 @@ const EditorPage: React.FC = () => {
     },
   });
 
+
+
   const handleSave = async () => {
     if (!activeTemplate) {
       return;
     }
     try {
-      const thumbnail = await captureCanvas();
+      const thumbnail = await captureCanvas(canvasRef, activeTemplate);
       const formData = new FormData();
       const base64Data = thumbnail.split(",")[1];
       const byteArray = new Uint8Array(
@@ -189,6 +206,9 @@ const EditorPage: React.FC = () => {
       formData.append("name", activeTemplate.name);
       formData.append("templateData", JSON.stringify(activeTemplate));
       const result = await api.uploadThumbnail(formData);
+      if (result.designId) {
+        localStorage.setItem('design_id', result.designId);
+      }
       if (result.success) {
         alert("Design saved successfully!");
       } else {
@@ -199,6 +219,9 @@ const EditorPage: React.FC = () => {
       alert("Failed to save the design");
     }
   };
+
+
+
 
   if (isError) {
     return (
