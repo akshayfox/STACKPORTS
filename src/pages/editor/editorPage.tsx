@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import {
-  Menu,
-  Search,
-  Share2,
-  ChevronDown,
-  Home,
-  Settings,
-} from "lucide-react";
+import { Menu, Share2, ChevronDown, Home, Settings } from "lucide-react";
 import { useEditorStore } from "../../store/editorStore";
 import Toolbar from "../../components/Toolbar";
 import Canvas from "../../components/Canvas";
@@ -79,23 +72,21 @@ const api = {
   },
 };
 
-
 const EditorPage: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { setActiveTemplate, activeTemplate } = useEditorStore();
-  console.log(activeTemplate, "activeTemplate");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
 
   useEffect(() => {
     saveInitialDesign();
-
     return () => {
       setActiveTemplate(null);
     };
   }, [location.state, setActiveTemplate, id]);
+
 
   const saveInitialDesign = async () => {
     if (!id) {
@@ -145,7 +136,8 @@ const EditorPage: React.FC = () => {
     enabled: !!id,
   });
 
-  const { mutate: saveTemplate, isPending } = useMutation({
+
+  const { mutate:saveTemplate, isPending } = useMutation({
     mutationFn: api.saveDesign,
     onSuccess: () => {
       alert("Design saved successfully!");
@@ -260,7 +252,6 @@ const EditorPage: React.FC = () => {
           ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}>
-
           <div className="flex-1 overflow-y-auto">
             <Toolbar />
           </div>

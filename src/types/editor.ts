@@ -66,3 +66,17 @@ export interface ContextMenuProps {
   onClose: () => void;
   onOptionClick: (action: string) => void;
 }
+
+
+export type MenuItem = {
+  name: string;
+  icon: React.ReactNode;
+  content?: { name: string; url: string }[]; // Removed `type` property
+};
+
+
+export type UploadResponse = {
+  success: boolean;
+  files: Array<{ name: string; url: string }>; // Removed `type` property
+  message?: string;
+};

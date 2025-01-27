@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
-  ChevronDown,
-  Search,
-  SlidersHorizontal,
   Edit,
   Copy,
   Trash,
@@ -93,9 +89,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 const TemplatePage: React.FC = () => {
   const navigate = useNavigate();
   const {
-    addElement,
-    selectedElement,
-    removeElement,
     activeTemplate,
     setActiveTemplate,
   } = useEditorStore();
@@ -103,7 +96,6 @@ const TemplatePage: React.FC = () => {
   console.log(activeTemplate, "activeTemplate");
 
   const queryClient = useQueryClient();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     x: 0,
     y: 0,
