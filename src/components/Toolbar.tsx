@@ -1,241 +1,159 @@
-import React, { useState, useRef } from "react";
-import { useEditorStore } from "../store/editorStore";
-import {
-  Type,
-  Image,
-  Square,
-  Circle,
-  Triangle,
-  Trash2,
-  ChevronDown,
-  CreativeCommons,
-} from "lucide-react";
-import { nanoid } from "nanoid";
-import FormgenerateModal from "./modal/FormgenerateModal ";
 
-interface ElementStyle {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number;
-  backgroundColor: string;
-  shapeType: string;
-  fontSize?: number;
-  color?: string;
-  path?: string;
-}
 
-interface EditorElement {
-  id: string;
-  type: "text" | "image" | "shape";
-  content: string;
-  style: ElementStyle;
-}
 
-const Toolbar = () => {
-  const { addElement, selectedElement, removeElement,activeTemplate } = useEditorStore();
-  const [showShapeMenu, setShowShapeMenu] = useState(false);
-  const [isformopen, setisformopen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+import React, { useState } from 'react';
 
-  const addText = () => {
-    const element: EditorElement = {
-      id: nanoid(),
-      type: "text",
-      content: "Double click to edit",
-      style: {
-        x: 100,
-        y: 100,
-        width: 200,
-        height: 50,
-        rotation: 0,
-        fontSize: 16,
-        color: "#000000",
-        shapeType: "text",
-        backgroundColor: "transparent",
-      },
-    };
-    addElement(element);
-  };
+const icons = {
+  Template: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <line x1="9" y1="21" x2="9" y2="9" />
+    </svg>
+  ),
+  Photos: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
+    </svg>
+  ),
+  Text: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 7V4h16v3" />
+      <line x1="12" y1="4" x2="12" y2="20" />
+      <line x1="8" y1="20" x2="16" y2="20" />
+    </svg>
+  ),
+  Elements: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </svg>
+  ),
+  Graphics: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+    </svg>
+  ),
+  Music: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </svg>
+  ),
+  Videos: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+      <path d="M10 8l6 4-6 4V8z" />
+    </svg>
+  ),
+  Uploads: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  ),
+  Folders: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
+    </svg>
+  )
+};
+type MenuItem = {
+  name: string;
+  icon: React.ReactNode;
+  content?: { type: string; name: string }[];
+};
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const element: EditorElement = {
-          id: nanoid(),
-          type: "image",
-          content: event.target?.result as string,
-          style: {
-            x: 100,
-            y: 100,
-            width: 200,
-            height: 200,
-            rotation: 0,
-            shapeType: "image",
-            backgroundColor: "transparent",
-            fontSize: 16,
-            color: "#000000",
-          },
-        };
-        addElement(element);
-      };
-      reader.readAsDataURL(file);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+const Sidebar: React.FC = () => {
+  const [activeItem, setActiveItem] = useState<string | null>(null);
 
-  const getShapePath = (shapeType: string, width: number, height: number) => {
-    switch (shapeType) {
-      case "rectangle":
-        return `M 0 0 H ${width} V ${height} H 0 Z`;
-      case "circle":
-        const rx = width / 2;
-        const ry = height / 2;
-        return `M ${width / 2} 0 A ${rx} ${ry} 0 1 0 ${width / 2} ${height} A ${rx} ${ry} 0 1 0 ${width / 2} 0 Z`;
-      case "triangle":
-        return `M ${width / 2} 0 L ${width} ${height} L 0 ${height} Z`;
-      case "star":
-        const points = [
-          [50, 0],
-          [61, 35],
-          [98, 35],
-          [68, 57],
-          [79, 91],
-          [50, 70],
-          [21, 91],
-          [32, 57],
-          [2, 35],
-          [39, 35],
-        ].map(([x, y]) => [(x * width) / 100, (y * height) / 100]);
-        return `M ${points[0][0]} ${points[0][1]} ${points
-          .slice(1)
-          .map(([x, y]) => `L ${x} ${y}`)
-          .join(" ")} Z`;
-      default:
-        return `M 0 0 H ${width} V ${height} H 0 Z`;
-    }
-  };
+  const menuItems: MenuItem[] = [
+    { name: 'Template', icon: icons.Template },
+    { name: 'Photos', icon: icons.Photos },
+    { name: 'Text', icon: icons.Text },
+    { name: 'Elements', icon: icons.Elements },
+    { name: 'Graphics', icon: icons.Graphics },
+    { name: 'Music', icon: icons.Music },
+    { name: 'Videos', icon: icons.Videos },
+    {
+      name: 'Uploads',
+      icon: icons.Uploads,
+      content: [
+        { type: 'image', name: 'Presentation.jpg' },
+        { type: 'image', name: 'Logo Design.png' },
+        { type: 'image', name: 'Banner.jpg' },
+        { type: 'image', name: 'Profile Pic.png' },
+        { type: 'image', name: 'Background.jpg' },
+        { type: 'image', name: 'Icon Set.png' },
+      ],
+    },
+    { name: 'Folders', icon: icons.Folders },
+  ];
 
-  const addShape = (shapeType: string) => {
-    const width = 100;
-    const height = 100;
-
-    const element: EditorElement = {
-      id: nanoid(),
-      type: "shape",
-      content: "",
-      style: {
-        x: 100,
-        y: 100,
-        width,
-        height,
-        rotation: 0,
-        backgroundColor: "#e2e8f0",
-        shapeType,
-        fontSize: 16,
-        color: "#000000",
-        path: getShapePath(shapeType, width, height),
-      },
-    };
-
-    addElement(element);
-    setShowShapeMenu(false);
-  };
-
-  const createform = () => {
-    setisformopen(true);
+  const handleItemClick = (itemName: string) => {
+    setActiveItem(activeItem === itemName ? null : itemName);
   };
 
   return (
-    <>
-      <div className="bg-white p-4 shadow-lg rounded-lg h-full">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleImageUpload}
-          accept="image/*"
-          className="hidden"
-        />
-        <h3 className="font-semibold text-lg border-b pb-2 mb-4">Tools</h3>
-        <div className="space-y-2">
-          <button
-            onClick={addText}
-            className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors">
-            <Type size={20} /> Add Text
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors">
-            <Image size={20} /> Upload Image
-          </button>
-
-          <div className="relative">
-            <button
-              onClick={() => setShowShapeMenu(!showShapeMenu)}
-              className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors justify-between">
-              <div className="flex items-center gap-3">
-                <Square size={20} /> Add Shape
-              </div>
-              <ChevronDown
-                size={16}
-                className={`transform transition-transform ${
-                  showShapeMenu ? "rotate-180" : ""
+    <div className="flex h-screen bg-gray-50">
+      {/* Minimal Sidebar */}
+      <div className="w-16 h-full bg-white shadow-sm flex flex-col items-center py-4 z-10 fixed">
+        {menuItems.map((item) => (
+          <div
+            key={item.name}
+            className="relative w-12 mb-2"
+            onClick={() => handleItemClick(item.name)}
+          >
+            <div
+              className={`p-3 rounded-xl cursor-pointer transition-all duration-200
+                ${activeItem === item.name
+                  ? 'bg-blue-100 text-blue-600 shadow-sm'
+                  : 'hover:bg-gray-100 text-gray-600'
                 }`}
-              />
-            </button>
-
-            {showShapeMenu && (
-              <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
-                <button
-                  onClick={() => addShape("rectangle")}
-                  className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
-                  <Square size={16} /> Rectangle
-                </button>
-                <button
-                  onClick={() => addShape("circle")}
-                  className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
-                  <Circle size={16} /> Circle
-                </button>
-                <button
-                  onClick={() => addShape("triangle")}
-                  className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
-                  <Triangle size={16} /> Triangle
-                </button>
-                <button
-                  onClick={() => addShape("star")}
-                  className="w-full p-2 hover:bg-gray-100 flex items-center gap-2">
-                  <span className="text-lg">★</span> Star
-                </button>
-              </div>
-            )}
+            >
+              {item.icon}
+            </div>
           </div>
-
-          {selectedElement && (
-            <button
-              onClick={() => removeElement(selectedElement.id)}
-              className="w-full p-3 hover:bg-red-50 text-red-600 rounded-lg flex items-center gap-3 transition-colors mt-4">
-              <Trash2 size={20} /> Delete Element
-            </button>
-          )}
-        </div>
-
-        <button
-          onClick={createform}
-          className="w-full p-3 hover:bg-gray-100 rounded-lg flex items-center gap-3 transition-colors">
-          <CreativeCommons size={20} />
-          Create Form
-        </button>
+        ))}
       </div>
 
-      {/* Pass the design elements to the modal */}
-      <FormgenerateModal open={isformopen} setOpen={setisformopen} template={activeTemplate} />
-    </>
+      {/* Expanded Content */}
+      {activeItem === 'Uploads' && (
+        <div className="w-80 h-full bg-white border-l border-gray-200 shadow-sm p-6 transition-all duration-300 ease-in-out ml-16 overflow-y-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">Uploads</h3>
+            <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+              Upload New
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {menuItems.find((item) => item.name === 'Uploads')?.content?.map((file, index) => (
+              <div key={index} className="group relative cursor-pointer">
+                <div className="aspect-square overflow-hidden rounded-xl shadow-sm group-hover:shadow-md transition-all duration-200">
+                  <img
+                    src="/api/placeholder/200/200"
+                    alt={file.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                </div>
+                <p className="text-sm mt-2 text-gray-600 group-hover:text-gray-900 truncate">
+                  {file.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default Toolbar;
+
+export default Sidebar;

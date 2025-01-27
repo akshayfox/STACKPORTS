@@ -255,21 +255,12 @@ const EditorPage: React.FC = () => {
 
       <main className="flex relative h-[calc(100vh-104px)] md:h-[calc(100vh-104px)]">
         <aside
-          className={`absolute md:relative w-[210px] bg-white border-r border-gray-200 
+          className={`absolute  bg-white border-r border-gray-200 
           flex flex-col h-full z-40 transition-transform duration-300
           ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}>
-          <div className="p-4 border-b border-gray-200">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search elements..."
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-          </div>
+
           <div className="flex-1 overflow-y-auto">
             <Toolbar />
           </div>
