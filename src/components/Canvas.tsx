@@ -60,8 +60,8 @@ const Canvas: React.FC<{ drag?: boolean }> = ({ drag = true }) => {
       onClick={handleCanvasClick}
       onKeyDown={handleKeyDown}
       style={{
-        width: activeTemplate.canvasSize.width,
-        height: activeTemplate.canvasSize.height,
+        width: activeTemplate.canvasSize!.width,
+        height: activeTemplate.canvasSize!.height,
         maxWidth: '100%',
         transform: 'scale(var(--canvas-scale, 1))',
         transformOrigin: 'top left',

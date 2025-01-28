@@ -26,12 +26,12 @@ export interface Element {
 export interface Template {
   _id?: string;
   id?: string;
-  name: string;
+  name?: string;
   thumbnail?: string;
   elements: Element[];
-  canvasSize: {
-    width: number;
-    height: number;
+  canvasSize?: {
+    width?: number;
+    height?: number;
   };
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,24 +17,28 @@ interface FormgenerateModalProps {
   template: Template | null;
 }
 
-
 const fetchForm = async (id: string): Promise<Form> => {
-    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/form/${id}`,{
-        params:{templateId:id}
-    }); // Fetch a single form by ID
-    console.log(response,'response')
-    return response.data.forms[0]||[]; // Assuming the API returns { form: {...} }
-  };
-  
+  const response = await axios.get(
+    `${import.meta.env.VITE_BASE_URL}/form/${id}`,
+    {
+      params: { templateId: id },
+    }
+  );
+  return response.data.forms[0] || [];
+};
 
-function DataEntryModal({
-  open,
-  setOpen,
-  template,
-}: FormgenerateModalProps) {
-  const { selectedElement, setSelectedElement } = useEditorStore();
+function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
+  const {
+    selectedElement,
+    setSelectedElement,
+    activeTemplate,
+    setActiveTemplate,
+  } = useEditorStore();
+  console.log(selectedElement, "selectedElement");
   const [selectedelements, setSelectedElements] = useState<Element[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  console.log(activeTemplate, "activeTemplate");
 
   useEffect(() => {
     if (
@@ -46,8 +50,6 @@ function DataEntryModal({
     }
   }, [selectedElement]);
 
-
-
   const {
     data: form,
     isLoading,
@@ -56,13 +58,10 @@ function DataEntryModal({
   } = useQuery<Form>({
     queryKey: ["form", template?._id],
     queryFn: () => fetchForm(template?._id as string),
-    enabled: !!open && !!template?._id, // Only fetch if the modal is open and template._id exists
+    enabled: !!open && !!template?._id,
   });
-  
-  console.log(form,"FORM")
 
-  
-
+  console.log(form, "FORM");
 
   const handleRemoveElement = (id: string) => {
     setSelectedElements((prev) => prev.filter((e) => e.id !== id));
@@ -103,6 +102,77 @@ function DataEntryModal({
     }
   };
 
+  const handletextchange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const updatedValue = e.target.value;
+    const updatedId = e.target.id;
+    const updatedElements = activeTemplate?.elements.map((element) => {
+      if (element.id === updatedId && element.type === "text") {
+        return {
+          ...element,
+          content: updatedValue, // Update content field with the new value
+        };
+      }
+      return element; // Return other elements unchanged
+    });
+    if (updatedElements) {
+      console.log(updatedElements, "updatedElements");
+      const updatedTemplate = {
+        ...activeTemplate,
+        elements: updatedElements,
+      };
+
+      setActiveTemplate(updatedTemplate); // assuming setActiveTemplate is your state setter
+    }
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (!files?.length) return;
+
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => formData.append("images", file));
+
+      const { status, data } = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/upload`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      if (status === 200) {
+        const url = data.docs[0].url;
+        return url;
+      } else throw new Error("Failed to upload images.");
+    } catch (error) {
+      console.error("Error uploading images:", error);
+    }
+  };
+
+  const handleimagechange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // const updatedValue = e.target.value;
+    const newUrl = await handleFileChange(e);
+    const updatedId = e.target.id;
+    const updatedElements = activeTemplate?.elements.map((element) => {
+      if (element.id === updatedId && element.type === "image") {
+        return {
+          ...element,
+          content: `${import.meta.env.VITE_IMAGE_URL}${newUrl}`,
+        };
+      }
+      return element;
+    });
+    console.log(updatedElements, "updatedElements");
+    if (updatedElements) {
+      const updatedTemplate = {
+        ...activeTemplate,
+        elements: updatedElements,
+      };
+
+      setActiveTemplate(updatedTemplate); // assuming setActiveTemplate is your state setter
+    }
+  };
+
   const renderFormField = (element: Element) => {
     switch (element.type) {
       case "text":
@@ -113,6 +183,7 @@ function DataEntryModal({
             </label>
             <div className="relative">
               <input
+                onChange={handletextchange}
                 type="text"
                 id={element.id}
                 name={element.id}
@@ -138,6 +209,8 @@ function DataEntryModal({
             </label>
             <div className="relative">
               <input
+                ref={fileInputRef}
+                onChange={handleimagechange}
                 type="file"
                 id={element.id}
                 name={element.id}
@@ -160,7 +233,6 @@ function DataEntryModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Create Form</DialogTitle>

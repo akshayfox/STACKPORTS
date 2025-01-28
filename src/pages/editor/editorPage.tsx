@@ -52,6 +52,7 @@ const EditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { setActiveTemplate, activeTemplate } = useEditorStore();
+  console.log(activeTemplate,'activeTemplate')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
 
@@ -120,7 +121,7 @@ const EditorPage: React.FC = () => {
       const byteArray = new Uint8Array(atob(base64Data).split("").map((char) => char.charCodeAt(0)));
       const blob = new Blob([byteArray], { type: "image/png" });
       formData.append("file", blob, "thumbnail.png");
-      formData.append("name", activeTemplate.name);
+      formData.append("name", activeTemplate.name!);
       formData.append("templateData", JSON.stringify(activeTemplate));
       const result = activeTemplate._id
         ? await api.updateDesign(activeTemplate._id, formData)

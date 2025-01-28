@@ -66,11 +66,9 @@ const CanvasElement: React.FC<Props> = ({ element }) => {
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateElement(element.id, { content: e.target.value });
   };
-
   const handleBlur = () => {
     setIsEditing(false);
   };
-
   const renderContent = () => {
     if (element.type === 'text' && isEditing) {
       return (
@@ -87,20 +85,16 @@ const CanvasElement: React.FC<Props> = ({ element }) => {
         />
       );
     }
-
     if (element.type === 'text') {
       return <p className="m-0 p-0 break-words">{element.content}</p>;
     }
-
     if (element.type === 'image') {
       return <img src={element.content} alt="" className="w-full h-full object-cover" />;
     }
-
     // Shape rendering
     if (element.type === 'shape') {
       return <div style={getShapeStyles(element.style.shapeType)} />;
     }
-
     return null;
   };
 

@@ -6,6 +6,7 @@ import { MenuItem } from "@/types/editor";
 import { useQuery } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { useEditorStore } from "@/store/editorStore";
+import FormgenerateModal from "./modal/FormgenerateModal ";
 
 interface ElementStyle {
   x: number;
@@ -29,6 +30,7 @@ interface EditorElement {
 
 const Toolbar: React.FC = () => {
   const [activeItem, setActiveItem] = useState<string | null>(null);
+    const [isformopen, setisformopen] = useState(false);
   const { addElement, selectedElement, removeElement, activeTemplate } =
     useEditorStore();
 
@@ -133,6 +135,13 @@ const Toolbar: React.FC = () => {
         console.log("Folders selected");
       },
     },
+    {
+      name: "Folders",
+      icon: icons.Create,
+      action: () => {
+        setisformopen(true);
+      },
+    },
   ];
 
   const handleButtonClick = () => {
@@ -222,6 +231,9 @@ const Toolbar: React.FC = () => {
           <FileUpload menuItems={menuItems} />
         </div>
       )}
+
+
+<FormgenerateModal open={isformopen} setOpen={setisformopen} template={activeTemplate} />
     </div>
   );
 };
