@@ -25,7 +25,7 @@ export interface Element {
 
 export interface Template {
   _id?: string;
-  id: string;
+  id?: string;
   name: string;
   thumbnail?: string;
   elements: Element[];
@@ -72,7 +72,7 @@ export type MenuItem = {
   name: string;
   icon: React.ReactNode;
   content?: { name: string; url: string }[]; // Removed `type` property
-};
+  action?: () => void;};
 
 
 export type UploadResponse = {
