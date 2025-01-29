@@ -20,30 +20,56 @@ const DEFAULT_CANVAS_SIZE = {
 type DesignResponse = {
   success: boolean;
   error?: string;
-  design?: { _id: string; name: string; thumbnail: string; elements: any[]; canvasSize: any; createdAt: string; updatedAt: string } | null;
+  design?: {
+    _id: string;
+    name: string;
+    thumbnail: string;
+    elements: any[];
+    canvasSize: any;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
 };
 
 const api = {
   async saveDesign(design: Template): Promise<Template> {
-    const { data } = await axios.post<Template>(`${import.meta.env.VITE_BASE_URL}/designs`, design);
+    const { data } = await axios.post<Template>(
+      `${import.meta.env.VITE_BASE_URL}/designs`,
+      design
+    );
     return data;
   },
 
   async fetchDesign(id: string): Promise<Template> {
-    const { data } = await axios.get<{ design: Template }>(`${import.meta.env.VITE_BASE_URL}/designs/${id}`);
+    const { data } = await axios.get<{ design: Template }>(
+      `${import.meta.env.VITE_BASE_URL}/designs/${id}`
+    );
     return data.design;
   },
 
   async uploadThumbnail(formData: FormData): Promise<DesignResponse> {
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs`, { method: "POST", body: formData });
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs`, {
+      method: "POST",
+      body: formData,
+    });
     const result = await response.json();
-    return { success: response.ok, error: !response.ok ? result.error : undefined, design: response.ok ? result.design : null };
+    return {
+      success: response.ok,
+      error: !response.ok ? result.error : undefined,
+      design: response.ok ? result.design : null,
+    };
   },
 
   async updateDesign(id: string, formData: FormData): Promise<DesignResponse> {
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/designs/${id}`, { method: "PUT", body: formData });
+    const response = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/designs/${id}`,
+      { method: "PUT", body: formData }
+    );
     const result = await response.json();
-    return { success: response.ok, error: !response.ok ? result.error : undefined };
+    return {
+      success: response.ok,
+      error: !response.ok ? result.error : undefined,
+    };
   },
 };
 
@@ -52,13 +78,11 @@ const EditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { setActiveTemplate, activeTemplate } = useEditorStore();
-  console.log(activeTemplate,'activeTemplate')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
 
   useEffect(() => {
-    if(!id){
-
+    if (!id) {
       saveInitialDesign();
     }
     return () => setActiveTemplate(null);
@@ -66,19 +90,27 @@ const EditorPage: React.FC = () => {
 
   const saveInitialDesign = async () => {
     if (!id || activeTemplate?._id) {
-      const locationState = location.state as { width: number; height: number } || DEFAULT_CANVAS_SIZE;
+      const locationState =
+        (location.state as { width: number; height: number }) ||
+        DEFAULT_CANVAS_SIZE;
+
+      // Ensure activeTemplate is properly set with default canvas size
       const newTemplate = {
         id: uuidv4(),
         name: "Untitled Design",
         elements: [],
-        canvasSize: locationState,
+        canvasSize: activeTemplate?.canvasSize || locationState,
       };
 
       try {
-        const thumbnail = await captureCanvas(canvasRef, activeTemplate);
+        const thumbnail = await captureCanvas(canvasRef, newTemplate); // Pass newTemplate instead of activeTemplate
         const formData = new FormData();
         const base64Data = thumbnail.split(",")[1];
-        const byteArray = new Uint8Array(atob(base64Data).split("").map((char) => char.charCodeAt(0)));
+        const byteArray = new Uint8Array(
+          atob(base64Data)
+            .split("")
+            .map((char) => char.charCodeAt(0))
+        );
         const blob = new Blob([byteArray], { type: "image/png" });
         formData.append("file", blob, "thumbnail.png");
         formData.append("name", newTemplate.name);
@@ -90,15 +122,19 @@ const EditorPage: React.FC = () => {
           localStorage.setItem("design_id", result.design._id);
           window.history.replaceState(null, "", `/editor/${result.design._id}`);
         }
-      } catch (error) {
-        console.error("Initial save error:", error);
-      }
+      } catch (error) {}
     }
   };
 
   const { data: design, isError } = useQuery({
     queryKey: ["design", id],
-    queryFn: () => (id ? api.fetchDesign(id).then((design) => { setActiveTemplate(design); return design; }) : null),
+    queryFn: () =>
+      id
+        ? api.fetchDesign(id).then((design) => {
+            setActiveTemplate(design);
+            return design;
+          })
+        : null,
     enabled: !!id,
   });
 
@@ -118,7 +154,11 @@ const EditorPage: React.FC = () => {
       const thumbnail = await captureCanvas(canvasRef, activeTemplate);
       const formData = new FormData();
       const base64Data = thumbnail.split(",")[1];
-      const byteArray = new Uint8Array(atob(base64Data).split("").map((char) => char.charCodeAt(0)));
+      const byteArray = new Uint8Array(
+        atob(base64Data)
+          .split("")
+          .map((char) => char.charCodeAt(0))
+      );
       const blob = new Blob([byteArray], { type: "image/png" });
       formData.append("file", blob, "thumbnail.png");
       formData.append("name", activeTemplate.name!);
@@ -130,14 +170,23 @@ const EditorPage: React.FC = () => {
         localStorage.setItem("design_id", result.design._id);
         window.history.replaceState(null, "", `/editor/${result.design._id}`);
       }
-      alert(result.success ? "Design saved successfully!" : `Failed to save design: ${result.error}`);
+      alert(
+        result.success
+          ? "Design saved successfully!"
+          : `Failed to save design: ${result.error}`
+      );
     } catch (error) {
       console.error("Save error:", error);
       alert("Failed to save the design");
     }
   };
 
-  if (isError) return <div className="flex items-center justify-center h-screen"><p className="text-red-600">Error loading design</p></div>;
+  if (isError)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-600">Error loading design</p>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-white">
@@ -209,7 +258,7 @@ const EditorPage: React.FC = () => {
         <div className="flex-1 bg-gray-100" ref={canvasRef}>
           <ZoomableCanvas>
             <div className="bg-white rounded-lg shadow-xl">
-              <Canvas drag={true}/>
+              <Canvas drag={true} />
             </div>
           </ZoomableCanvas>
         </div>

@@ -180,7 +180,7 @@ const Toolbar: React.FC = () => {
 
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="">
       <div className="w-16 h-full bg-white shadow-sm flex flex-col items-center py-4 z-10 fixed">
         {menuItems.map((item) => (
          <div

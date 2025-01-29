@@ -58,7 +58,7 @@ function FormgenerateModal({
       })),
     };
     try {
-      const response = await fetch("http://localhost:3001/api/form", {
+      const response = await fetch(`http://localhost:3001/api/form`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +134,7 @@ function FormgenerateModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button onClick={() => setOpen(true)}>Open</button>
+        {/* <button onClick={() => setOpen(true)}>Open</button> */}
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>

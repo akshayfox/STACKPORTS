@@ -11,9 +11,12 @@ export const captureCanvas = async (
   if (!canvasContent) {
     throw new Error("Canvas content not found");
   }
+
+  // Safety check for activeTemplate and canvasSize
   if (!activeTemplate?.canvasSize) {
     throw new Error("Canvas size is not defined in the active template.");
   }
+
   try {
     const canvas = await html2canvas(canvasContent, {
       scale: 2,
@@ -24,25 +27,10 @@ export const captureCanvas = async (
       width: activeTemplate.canvasSize.width,
       height: activeTemplate.canvasSize.height,
     });
+
     return canvas.toDataURL("image/png");
   } catch (error) {
     console.error("Error capturing canvas:", error);
     throw error;
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
