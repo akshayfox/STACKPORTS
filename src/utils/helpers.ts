@@ -3,13 +3,16 @@ import { Template } from "../types/editor";
 
 export const captureCanvas = async (
   canvasRef: React.RefObject<HTMLDivElement>, 
-  activeTemplate?: Template|null
+  activeTemplate?: Template | null
 ): Promise<string> => {
   const canvasContent = canvasRef.current?.querySelector<HTMLElement>(
     ".bg-white.rounded-lg.shadow-xl"
   );
   if (!canvasContent) {
     throw new Error("Canvas content not found");
+  }
+  if (!activeTemplate?.canvasSize) {
+    throw new Error("Canvas size is not defined in the active template.");
   }
   try {
     const canvas = await html2canvas(canvasContent, {
@@ -18,13 +21,28 @@ export const captureCanvas = async (
       useCORS: true,
       logging: false,
       allowTaint: true,
-      width: activeTemplate?.canvasSize.width,
-      height: activeTemplate?.canvasSize.height,
+      width: activeTemplate.canvasSize.width,
+      height: activeTemplate.canvasSize.height,
     });
-
     return canvas.toDataURL("image/png");
   } catch (error) {
     console.error("Error capturing canvas:", error);
     throw error;
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

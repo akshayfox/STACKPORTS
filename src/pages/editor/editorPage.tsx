@@ -209,7 +209,7 @@ const EditorPage: React.FC = () => {
         <div className="flex-1 bg-gray-100" ref={canvasRef}>
           <ZoomableCanvas>
             <div className="bg-white rounded-lg shadow-xl">
-              <Canvas />
+              <Canvas drag={true}/>
             </div>
           </ZoomableCanvas>
         </div>

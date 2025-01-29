@@ -10,6 +10,17 @@ import Canvas from "../Canvas";
 import { useEditorStore } from "@/store/editorStore";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+
+
+
+
+
+
+interface PrintIDCardProps {
+  cardRef: React.RefObject<HTMLDivElement>;
+}
 
 interface FormgenerateModalProps {
   open: boolean;
@@ -27,6 +38,18 @@ const fetchForm = async (id: string): Promise<Form> => {
   return response.data.forms[0] || [];
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
 function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
   const {
     selectedElement,
@@ -37,8 +60,8 @@ function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
   console.log(selectedElement, "selectedElement");
   const [selectedelements, setSelectedElements] = useState<Element[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  console.log(activeTemplate, "activeTemplate");
 
   useEffect(() => {
     if (
@@ -173,6 +196,48 @@ function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
     }
   };
 
+
+
+  const print = async () => {
+    if (!cardRef.current) return;
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [57, 92],
+        putOnlyUsedFonts: true,
+        compress: true,
+        precision: 4,
+      });
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        imageTimeout: 15000,
+        removeContainer: true,
+        allowTaint: false,
+        windowWidth: cardRef.current.scrollWidth,
+        windowHeight: cardRef.current.scrollHeight,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.querySelector('[data-id-card]');
+          // if (clonedElement) {
+          //   clonedElement.style.transform = 'scale(1)';
+          // }
+        }
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 1.0); // Maximum quality
+      doc.addImage(imgData, 'JPEG', 0, 0, 57, 92, undefined, 'FAST');
+      const filename = template?.name 
+        ? `${template.name}_ID_Card.pdf`
+        : 'ID_Card.pdf';
+      doc.save(filename);
+    } catch (error) {
+      console.error('Error generating ID card PDF:', error);
+      throw new Error('Failed to generate ID card PDF. Please try again.');
+    }
+  };
+
   const renderFormField = (element: Element) => {
     switch (element.type) {
       case "text":
@@ -239,14 +304,14 @@ function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
         </DialogHeader>
         <div className="flex flex-col items-center justify-center bg-gray-100 p-4">
           <button
-            onClick={handleSubmit}
+            onClick={()=>print()}
             className="mb-6 py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-            Generate Form
+            Print 
           </button>
           <div className="flex flex-col md:flex-row gap-4 bg-gray-100 p-4 w-full max-w-6xl">
             <div className="bg-white rounded-lg shadow-xl p-4 flex-1">
               {template ? (
-                <Canvas drag={false} />
+                <Canvas drag={false}  cardRef={cardRef}/>
               ) : (
                 <p>No template available</p>
               )}

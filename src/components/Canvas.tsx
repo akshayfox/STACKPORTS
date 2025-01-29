@@ -2,8 +2,16 @@ import React from 'react';
 import { useEditorStore } from '../store/editorStore';
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor, MouseSensor, TouchSensor } from '@dnd-kit/core';
 import CanvasElement from './CanvasElement';
+import { Template } from '@/types/editor';
 
-const Canvas: React.FC<{ drag?: boolean }> = ({ drag = true }) => {
+
+interface CanvasProps {
+  drag?: boolean;
+  cardRef?: React.RefObject<HTMLDivElement>;
+}
+
+
+const Canvas: React.FC<CanvasProps> = ({ drag = true, cardRef  }:CanvasProps) => {
   const { activeTemplate, updateElement, setSelectedElement, selectedElement, removeElement } = useEditorStore();
 
   const sensors = useSensors(
@@ -56,6 +64,7 @@ const Canvas: React.FC<{ drag?: boolean }> = ({ drag = true }) => {
 
   return (
     <div
+    ref={cardRef}
       className="relative bg-white shadow-lg rounded-lg overflow-hidden mx-auto"
       onClick={handleCanvasClick}
       onKeyDown={handleKeyDown}
@@ -75,7 +84,7 @@ const Canvas: React.FC<{ drag?: boolean }> = ({ drag = true }) => {
         </DndContext>
       ) : (
         activeTemplate.elements.map((element) => (
-          <CanvasElement key={element.id} element={element} />
+          <CanvasElement key={element.id} element={element}  />
         ))
       )}
     </div>
