@@ -18,9 +18,6 @@ import { jsPDF } from "jspdf";
 
 
 
-interface PrintIDCardProps {
-  cardRef: React.RefObject<HTMLDivElement>;
-}
 
 interface FormgenerateModalProps {
   open: boolean;
@@ -51,13 +48,13 @@ const fetchForm = async (id: string): Promise<Form> => {
 
 
 function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
+  console.log(template,'template')
   const {
     selectedElement,
     setSelectedElement,
     activeTemplate,
     setActiveTemplate,
   } = useEditorStore();
-  console.log(selectedElement, "selectedElement");
   const [selectedelements, setSelectedElements] = useState<Element[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -191,8 +188,7 @@ function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
         ...activeTemplate,
         elements: updatedElements,
       };
-
-      setActiveTemplate(updatedTemplate); // assuming setActiveTemplate is your state setter
+      setActiveTemplate(updatedTemplate);
     }
   };
 
@@ -206,7 +202,7 @@ function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
         unit: 'mm',
         format: [57, 92],
         putOnlyUsedFonts: true,
-        compress: true,
+        compress: false,
         precision: 4,
       });
       const canvas = await html2canvas(cardRef.current, {
@@ -227,7 +223,7 @@ function DataEntryModal({ open, setOpen, template }: FormgenerateModalProps) {
         }
       });
       const imgData = canvas.toDataURL('image/jpeg', 1.0); // Maximum quality
-      doc.addImage(imgData, 'JPEG', 0, 0, 57, 92, undefined, 'FAST');
+      doc.addImage(imgData, 'PNG', 0, 0, 57, 99, undefined, 'FAST');
       const filename = template?.name 
         ? `${template.name}_ID_Card.pdf`
         : 'ID_Card.pdf';

@@ -93,8 +93,6 @@ const TemplatePage: React.FC = () => {
     setActiveTemplate,
   } = useEditorStore();
 
-  console.log(activeTemplate, "activeTemplate");
-
   const queryClient = useQueryClient();
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     x: 0,
@@ -186,7 +184,6 @@ const TemplatePage: React.FC = () => {
     }
     setShowDeleteDialog(false);
   };
-
   if (isLoading) return <div>Loading designs...</div>;
   if (isError) return <div>Error loading designs. Please try again later.</div>;
   if (!templates) return null;
