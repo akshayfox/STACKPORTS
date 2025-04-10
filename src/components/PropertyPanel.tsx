@@ -152,6 +152,23 @@ const PropertyPanel: React.FC = () => {
           {selectedElement.style.rotation}°
         </div>
       </div>
+
+      <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Border Radius
+  </label>
+  <input
+    type="number"
+    value={selectedElement.style.borderRadius || 0}
+    onChange={(e) =>
+      handleStyleChange("borderRadius", Number(e.target.value))
+    }
+    className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+    min="0"
+    max="200"
+  />
+</div>
+
     </div>
   );
 };

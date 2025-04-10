@@ -1,56 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditorStore } from '../store/editorStore';
-import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor, MouseSensor, TouchSensor } from '@dnd-kit/core';
+import {
+  DndContext,
+  DragEndEvent,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+} from '@dnd-kit/core';
 import CanvasElement from './CanvasElement';
-import { Template } from '@/types/editor';
-
 
 interface CanvasProps {
   drag?: boolean;
   cardRef?: React.RefObject<HTMLDivElement>;
 }
 
+const Canvas: React.FC<CanvasProps> = ({ drag = true, cardRef }) => {
+  const {
+    activeTemplate,
+    updateElement,
+    setSelectedElement,
+    selectedElement,
+    removeElement,
+  } = useEditorStore();
 
-const Canvas: React.FC<CanvasProps> = ({ drag = true, cardRef  }:CanvasProps) => {
-  const { activeTemplate, updateElement, setSelectedElement, selectedElement, removeElement } = useEditorStore();
+  const [isAnyElementResizing, setIsAnyElementResizing] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(MouseSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 100,
-        tolerance: 8,
-      },
+      activationConstraint: { delay: 100, tolerance: 8 },
     })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, delta } = event;
+    if (isAnyElementResizing) return;
 
-    if (active) {
-      const element = activeTemplate?.elements.find(el => el.id === active.id);
-      if (element) {
-        updateElement(active.id as string, {
-          style: {
-            ...element.style,
-            x: element.style.x + delta.x,
-            y: element.style.y + delta.y,
-          },
-        });
-      }
+    const { active, delta } = event;
+    const element = activeTemplate?.elements.find(el => el.id === active.id);
+
+    if (element) {
+      updateElement(active.id as string, {
+        style: {
+          ...element.style,
+          x: element.style.x + delta.x,
+          y: element.style.y + delta.y,
+        },
+      });
     }
   };
-
-  if (!activeTemplate) return null;
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Delete' && selectedElement) {
@@ -62,31 +62,38 @@ const Canvas: React.FC<CanvasProps> = ({ drag = true, cardRef  }:CanvasProps) =>
     setSelectedElement(null);
   };
 
+  const handleResizeStateChange = (isResizing: boolean) => {
+    setIsAnyElementResizing(isResizing);
+  };
+
+  if (!activeTemplate) return null;
+
+  const canvasStyle = {
+    width: activeTemplate.canvasSize?.width,
+    height: activeTemplate.canvasSize?.height,
+    maxWidth: '100%',
+    transform: 'scale(var(--canvas-scale, 1))',
+    transformOrigin: 'top left',
+  } as React.CSSProperties;
+
+  const elements = activeTemplate.elements.map(element => (
+    <CanvasElement
+      key={element.id}
+      element={element}
+      onResizeStateChange={handleResizeStateChange}
+    />
+  ));
+
   return (
     <div
-    ref={cardRef}
+      ref={cardRef}
       className="relative bg-white shadow-lg rounded-lg overflow-hidden mx-auto"
       onClick={handleCanvasClick}
       onKeyDown={handleKeyDown}
-      style={{
-        width: activeTemplate.canvasSize!.width,
-        height: activeTemplate.canvasSize!.height,
-        maxWidth: '100%',
-        transform: 'scale(var(--canvas-scale, 1))',
-        transformOrigin: 'top left',
-      }}
+      style={canvasStyle}
+      tabIndex={0}
     >
-      {drag ? (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          {activeTemplate.elements.map((element) => (
-            <CanvasElement key={element.id} element={element} />
-          ))}
-        </DndContext>
-      ) : (
-        activeTemplate.elements.map((element) => (
-          <CanvasElement key={element.id} element={element}  />
-        ))
-      )}
+      {drag ? <DndContext sensors={sensors} onDragEnd={handleDragEnd}>{elements}</DndContext> : elements}
     </div>
   );
 };

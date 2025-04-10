@@ -14,12 +14,14 @@ export interface Element {
     shapeType: string;
     color?: string;
     backgroundColor?: string;
+    borderRadius?: number; // ✅ Added for rounded corners
   };
   placeholder?: string;
   label?: string;
   required?: boolean;
   options?: Array<{ value: string; label: string }>;
 }
+
 
 
 
