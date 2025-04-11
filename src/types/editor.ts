@@ -73,7 +73,7 @@ export interface ContextMenuProps {
 export type MenuItem = {
   name: string;
   icon: React.ReactNode;
-  content?: { name: string; url: string }[]; // Removed `type` property
+  content?: { name: string; url: string; _id: string }[];
   action?: () => void;};
 
 
@@ -81,4 +81,11 @@ export type UploadResponse = {
   success: boolean;
   files: Array<{ name: string; url: string }>; // Removed `type` property
   message?: string;
+};
+
+
+export type UploadedImage = {
+  _id: string;
+  name: string;
+  url: string;
 };
