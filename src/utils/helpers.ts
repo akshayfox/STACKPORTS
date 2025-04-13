@@ -1,37 +1,33 @@
-import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image";
 import { Template } from "../types/editor";
 
 export const captureCanvas = async (
-  canvasRef: React.RefObject<HTMLDivElement>, 
-  activeTemplate?: Template | null
+  canvasRef: React.RefObject<HTMLDivElement>,
+  activeTemplate: Template | null
 ): Promise<string> => {
-  const canvasContent = canvasRef.current?.querySelector<HTMLElement>(
+  if (!canvasRef.current) {
+    throw new Error("Canvas reference is null");
+  }
+  const canvasContent = canvasRef.current.querySelector<HTMLElement>(
     ".bg-white.rounded-lg.shadow-xl"
   );
   if (!canvasContent) {
     throw new Error("Canvas content not found");
   }
 
-  // Safety check for activeTemplate and canvasSize
   if (!activeTemplate?.canvasSize) {
-    throw new Error("Canvas size is not defined in the active template.");
+    throw new Error("Canvas size is undefined");
   }
-
   try {
-    const canvas = await html2canvas(canvasContent, {
-      scale: 2,
-      backgroundColor: null,
-      useCORS: true,
-      logging: false,
-      allowTaint: true,
+    return await domtoimage.toPng(canvasContent, {
       width: activeTemplate.canvasSize.width,
       height: activeTemplate.canvasSize.height,
+      bgcolor: "transparent",
+      quality: 0.95, // Slightly reduced quality for better performance
     });
-
-    return canvas.toDataURL("image/png");
   } catch (error) {
-    console.error("Error capturing canvas:", error);
-    throw error;
+    console.error("Failed to capture canvas:", error);
+    throw new Error("Canvas capture failed");
   }
 };
 
@@ -40,8 +36,6 @@ export const captureCanvas = async (
 
 
 
-
-// Add this above your component
 export const getImageId = (category: string, index: number): number => {
   const categoryMap: Record<string, [number, number]> = {
     Nature: [1015, 1016],
