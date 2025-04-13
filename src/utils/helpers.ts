@@ -2,8 +2,9 @@ import html2canvas from "html2canvas";
 import { Template } from "../types/editor";
 import React from "react";
 
+
 export const captureCanvas = async (
-  canvasRef: React.RefObject<HTMLDivElement>, 
+  canvasRef: React.RefObject<HTMLDivElement>,
   activeTemplate?: Template | null
 ): Promise<string> => {
   const canvasContent = canvasRef.current?.querySelector<HTMLElement>(
@@ -18,6 +19,22 @@ export const captureCanvas = async (
     throw new Error("Canvas size is not defined in the active template.");
   }
 
+  // Calculate bounding box of all elements
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  activeTemplate.elements.forEach((el) => {
+    const { x = 0, y = 0, width = 0, height = 0 } = el.style || {};
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + width);
+    maxY = Math.max(maxY, y + height);
+  });
+
+  const boundingWidth = maxX - minX || activeTemplate.canvasSize.width;
+  const boundingHeight = maxY - minY || activeTemplate.canvasSize.height;
+
   try {
     const canvas = await html2canvas(canvasContent, {
       scale: 2,
@@ -25,11 +42,20 @@ export const captureCanvas = async (
       useCORS: true,
       logging: false,
       allowTaint: true,
-      width: activeTemplate.canvasSize.width,
-      height: activeTemplate.canvasSize.height,
+      width: boundingWidth, // Use bounding box width
+      height: boundingHeight, // Use bounding box height
+      x: minX, // Offset to start of bounding box
+      y: minY, // Offset to start of bounding box
     });
 
-    return canvas.toDataURL("image/png");
+    // Create a temporary canvas to ensure the correct size
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = boundingWidth * 2; // Scale for high resolution
+    tempCanvas.height = boundingHeight * 2;
+    const context = tempCanvas.getContext("2d");
+    context.drawImage(canvas, 0, 0);
+
+    return tempCanvas.toDataURL("image/png");
   } catch (error) {
     console.error("Error capturing canvas:", error);
     throw error;
@@ -77,6 +103,7 @@ export const getShapeStyles = (
     height: "100%",
     backgroundColor,
     transform: `rotate(${rotation}deg)`,
+    overflow: "hidden",
   };
 
   switch (type) {

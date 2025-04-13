@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Minus, Plus, Move } from 'lucide-react';
+import { useEditorStore } from '@/store/editorStore';
 
 interface ZoomableCanvasProps {
   children: React.ReactNode;
@@ -11,6 +12,8 @@ const ZoomableCanvas: React.FC<ZoomableCanvasProps> = ({ children }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
+        const {setSelectedElement        } = useEditorStore();
+
 
   // Predefined zoom levels with smoother gradations
   const zoomLevels = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -155,6 +158,8 @@ const ZoomableCanvas: React.FC<ZoomableCanvasProps> = ({ children }) => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onClick={()=>setSelectedElement(null)}
+
       >
         <div
           className=" transition-transform duration-150 ease-out"
