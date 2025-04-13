@@ -19,11 +19,9 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
     startPosRef.current = { x: e.clientX, y: e.clientY };
     isDraggingRef.current = true;
     onResizeStart();
-    
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }, [onResizeStart]);
@@ -58,9 +56,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
 
 const getHandlePositionClass = (position: string) => {
   const base = 'transform';
-  
   switch (position) {
-    // Corner handles
     case 'top-left':
       return `${base} -translate-x-1/2 -translate-y-1/2 top-0 left-0 cursor-nw-resize`;
     case 'top-right':

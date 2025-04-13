@@ -1,44 +1,43 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Element } from "../types/editor";
 import { useEditorStore } from "../store/editorStore";
 import ResizeHandle from "./ResizeHandle";
+import { getShapeStyles } from "@/utils/helpers";
 
-interface Props {
+interface CanvasElementProps {
   element: Element;
   drag?: boolean;
   onResizeStateChange?: (isResizing: boolean) => void;
 }
 
-const CanvasElement: React.FC<Props> = ({
+
+
+const CanvasElement: React.FC<CanvasElementProps> = ({
   element,
   drag = true,
   onResizeStateChange,
 }) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
-  const shouldEnableDrag = drag && !isResizing && !isEditing;
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: element.id,
-  });
-
-  const { selectedElement, setSelectedElement, updateElement } =
-    useEditorStore();
+  const currentStyleRef = useRef(element.style);
+  
+  const { selectedElement, setSelectedElement, updateElement } = useEditorStore();
   const isSelected = selectedElement?.id === element.id;
 
-  const currentStyleRef = useRef(element.style);
+  // Only enable drag if not resizing or editing
+  const shouldEnableDrag = drag && !isResizing && !isEditing;
+  
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: element.id,
+    disabled: !shouldEnableDrag
+  });
 
   useEffect(() => {
     currentStyleRef.current = element.style;
   }, [element.style]);
 
+  // Transform style for dragging
   const transformStyle = useMemo(() => {
     if (transform && shouldEnableDrag) {
       return `translate3d(${transform.x}px, ${transform.y}px, 0)`;
@@ -46,53 +45,35 @@ const CanvasElement: React.FC<Props> = ({
     return undefined;
   }, [transform, shouldEnableDrag]);
 
-  const style = useMemo(
-    () => ({
-      transform: transformStyle,
-      position: "absolute" as const,
-      top: element.style.y,
-      left: element.style.x,
-      width: element.style.width,
-      height: element.style.height,
-      rotate: `${element.style.rotation}deg`,
-      fontSize: `${element.style.fontSize}px`,
-      color: element.style.color,
-      // For the container
-      borderRadius: element.style.borderRadius
-        ? `${element.style.borderRadius}%`
-        : "0%",
-      overflow: "hidden", // This is crucial for clipping child elements
-    }),
-    [transformStyle, element.style]
-  );
+  // Element style computation
+  const style = useMemo(() => ({
+    position: "absolute" as const,
+    transform: transformStyle,
+    top: element.style.y,
+    left: element.style.x,
+    width: element.style.width,
+    height: element.style.height,
+    rotate: `${element.style.rotation}deg`,
+    fontSize: `${element.style.fontSize}px`,
+    color: element.style.color,
+    borderRadius: element.style.borderRadius ? `${element.style.borderRadius}%` : "0%",
+    overflow: "hidden",
+  }), [transformStyle, element.style]);
 
-  const getShapeStyles = (type: string): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      width: "100%",
-      height: "100%",
-      backgroundColor: element.style.backgroundColor,
-    };
+  // Common content style
+  const contentStyle: React.CSSProperties = useMemo(() => ({
+    width: "100%",
+    height: "100%",
+    borderRadius: `${element.style.borderRadius || 0}px`,
+    overflow: "hidden",
+  }), [element.style.borderRadius]);
 
-    switch (type) {
-      case "circle":
-        return { ...base, borderRadius: "50%" };
-      case "triangle":
-        return { ...base, clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" };
-      case "star":
-        return {
-          ...base,
-          clipPath:
-            "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-        };
-      default:
-        return base;
-    }
-  };
+
+
 
   const handleResizeStart = useCallback(() => {
     setIsResizing(true);
     onResizeStateChange?.(true);
-
     if (transform) {
       updateElement(element.id, {
         style: {
@@ -102,155 +83,138 @@ const CanvasElement: React.FC<Props> = ({
         },
       });
     }
-  }, [
-    element.id,
-    element.style,
-    transform,
-    updateElement,
-    onResizeStateChange,
-  ]);
+  }, [element.id, element.style, transform, updateElement, onResizeStateChange]);
 
   const handleResizeEnd = useCallback(() => {
     setIsResizing(false);
     onResizeStateChange?.(false);
   }, [onResizeStateChange]);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    updateElement(element.id, { content: e.target.value });
-  };
 
-  const handleBlur = () => {
+
+  const handleResize = useCallback((updates: Partial<typeof element.style>) => {
+    const style = currentStyleRef.current;
+    updateElement(element.id, {
+      style: {
+        ...style,
+        ...updates,
+        width: updates.width !== undefined ? Math.max(20, updates.width) : style.width,
+        height: updates.height !== undefined ? Math.max(20, updates.height) : style.height,
+      },
+    });
+  }, [element.id, updateElement]);
+
+
+
+  const handleCornerResize = useCallback((corner: string, dx: number, dy: number) => {
+    const style = currentStyleRef.current;
+    const updates: Partial<typeof element.style> = {};
+    switch (corner) {
+      case "top-left":
+        updates.x = style.x + dx;
+        updates.y = style.y + dy;
+        updates.width = style.width - dx;
+        updates.height = style.height - dy;
+        break;
+      case "top-right":
+        updates.y = style.y + dy;
+        updates.width = style.width + dx;
+        updates.height = style.height - dy;
+        break;
+      case "bottom-left":
+        updates.x = style.x + dx;
+        updates.width = style.width - dx;
+        updates.height = style.height + dy;
+        break;
+      case "bottom-right":
+        updates.width = style.width + dx;
+        updates.height = style.height + dy;
+        break;
+    }
+    handleResize(updates);
+  }, [handleResize]);
+
+  const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateElement(element.id, { content: e.target.value });
+  }, [element.id, updateElement]);
+
+  const handleBlur = useCallback(() => {
     setIsEditing(false);
     onResizeStateChange?.(false);
-  };
+  }, [onResizeStateChange]);
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
+
+  
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (element.type === "text") {
       setIsEditing(true);
       onResizeStateChange?.(true);
     }
-  };
+  }, [element.type, onResizeStateChange]);
 
-  const renderContent = () => {
-    const contentStyle: React.CSSProperties = {
-      width: "100%",
-      height: "100%",
-      borderRadius: `${element.style.borderRadius || 0}px`,
-      overflow: "hidden",
-    };
+  // Click handler to select the element
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedElement(element);
+  }, [element, setSelectedElement]);
 
-    if (element.type === "text" && isEditing) {
-      return (
-        <textarea
-          style={{
-            ...contentStyle,
-            fontSize: `${element.style.fontSize}px`,
-            color: element.style.color,
-            backgroundColor: element.style.backgroundColor,
-          }}
-          className="p-0 border-none bg-transparent resize-none focus:outline-none"
-          value={element.content}
-          onChange={handleTextChange}
-          onBlur={handleBlur}
-          autoFocus
-        />
-      );
+  // Render different types of content
+  const renderContent = useCallback(() => {
+    switch (element.type) {
+      case "text":
+        if (isEditing) {
+          return (
+            <textarea
+              style={{
+                ...contentStyle,
+                fontSize: `${element.style.fontSize}px`,
+                color: element.style.color,
+                backgroundColor: element.style.backgroundColor,
+              }}
+              className="p-0 border-none bg-transparent resize-none focus:outline-none"
+              value={element.content}
+              onChange={handleTextChange}
+              onBlur={handleBlur}
+              autoFocus
+            />
+          );
+        }
+        return (
+          <p style={contentStyle} className="m-0 p-0 break-words">
+            {element.content}
+          </p>
+        );
+      
+      case "image":
+        return (
+          <img
+            src={element.content}
+            alt=""
+            style={contentStyle}
+            className="object-cover"
+          />
+        );
+      
+      case "shape":
+        return (
+          <div
+            style={{
+              ...contentStyle,
+              ...getShapeStyles(
+                element.style.shapeType,
+                element.style.backgroundColor!,
+                element.style.rotation ?? 0
+              ),
+            }}
+          />
+        );
+      
+      default:
+        return null;
     }
+  }, [element, isEditing, contentStyle, handleTextChange, handleBlur]);
 
-    if (element.type === "text") {
-      return (
-        <p style={contentStyle} className="m-0 p-0 break-words">
-          {element.content}
-        </p>
-      );
-    }
-
-    if (element.type === "image") {
-      return (
-        <img
-          src={element.content}
-          alt=""
-          style={contentStyle}
-          className="object-cover"
-        />
-      );
-    }
-
-    if (element.type === "shape") {
-      return (
-        <div
-          style={{
-            ...contentStyle,
-            ...getShapeStyles(element.style.shapeType),
-            backgroundColor: element.style.backgroundColor,
-          }}
-        />
-      );
-    }
-
-    return null;
-  };
-
-  const handleResize = (key: "width" | "height", delta: number) => {
-    const style = currentStyleRef.current;
-    updateElement(element.id, {
-      style: {
-        ...style,
-        [key]: Math.max(20, style[key] + delta),
-      },
-    });
-  };
-
-  // Modify the handleCornerResize function
-  const handleCornerResize = (corner: string, dx: number, dy: number) => {
-    const style = currentStyleRef.current;
-    switch (corner) {
-      case "top-left":
-        updateElement(element.id, {
-          style: {
-            ...style,
-            x: style.x + dx,
-            y: style.y + dy,
-            width: Math.max(20, style.width - dx),
-            height: Math.max(20, style.height - dy),
-          },
-        });
-        break;
-
-      case "top-right":
-        updateElement(element.id, {
-          style: {
-            ...style,
-            y: style.y + dy,
-            width: Math.max(20, style.width + dx),
-            height: Math.max(20, style.height - dy),
-          },
-        });
-        break;
-
-      case "bottom-left":
-        updateElement(element.id, {
-          style: {
-            ...style,
-            x: style.x + dx,
-            width: Math.max(20, style.width - dx),
-            height: Math.max(20, style.height + dy),
-          },
-        });
-        break;
-
-      case "bottom-right":
-        updateElement(element.id, {
-          style: {
-            ...style,
-            width: Math.max(20, style.width + dx),
-            height: Math.max(20, style.height + dy),
-          },
-        });
-        break;
-    }
-  };
   return (
     <div
       ref={setNodeRef}
@@ -262,59 +226,46 @@ const CanvasElement: React.FC<Props> = ({
           ? "cursor-move"
           : "cursor-default"
       }`}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelectedElement(element);
-      }}
+      onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       {...(shouldEnableDrag ? { ...listeners, ...attributes } : {})}>
       {renderContent()}
 
       {isSelected && (
         <>
+          {/* Edge resize handles */}
           <ResizeHandle
             position="right"
             onResizeStart={handleResizeStart}
             onResizeEnd={handleResizeEnd}
-            onResize={(dx) => handleResize("width", dx)}
+            onResize={(dx) => handleResize({ width: currentStyleRef.current.width + dx })}
           />
           <ResizeHandle
             position="bottom"
             onResizeStart={handleResizeStart}
             onResizeEnd={handleResizeEnd}
-            onResize={(_, dy) => handleResize("height", dy)}
+            onResize={(_, dy) => handleResize({ height: currentStyleRef.current.height + dy })}
           />
           <ResizeHandle
             position="left"
             onResizeStart={handleResizeStart}
             onResizeEnd={handleResizeEnd}
-            onResize={(dx) => {
-              const style = currentStyleRef.current;
-              updateElement(element.id, {
-                style: {
-                  ...style,
-                  x: style.x + dx,
-                  width: Math.max(20, style.width - dx),
-                },
-              });
-            }}
+            onResize={(dx) => handleResize({ 
+              x: currentStyleRef.current.x + dx,
+              width: currentStyleRef.current.width - dx 
+            })}
           />
           <ResizeHandle
             position="top"
             onResizeStart={handleResizeStart}
             onResizeEnd={handleResizeEnd}
-            onResize={(_, dy) => {
-              const style = currentStyleRef.current;
-              updateElement(element.id, {
-                style: {
-                  ...style,
-                  y: style.y + dy,
-                  height: Math.max(20, style.height - dy),
-                },
-              });
-            }}
+            onResize={(_, dy) => handleResize({ 
+              y: currentStyleRef.current.y + dy,
+              height: currentStyleRef.current.height - dy 
+            })}
           />
 
+          {/* Corner resize handles */}
           <ResizeHandle
             position="top-left"
             onResizeStart={handleResizeStart}
