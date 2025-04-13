@@ -10,31 +10,22 @@ function BasicLayout() {
             <div className="flex items-center space-x-2">
               <Palette className="h-8 w-8 text-indigo-600" />
               <Link to={'/'}>
-              <span className="font-bold text-xl">DesignPro</span>
+              <span className="font-bold text-xl">IDMATE</span>
               </Link>
             </div>
             <nav className="hidden md:flex space-x-8">
               <Link
                 to="/templates"
                 className="text-gray-600 hover:text-gray-900">
-                Templates
+                Designs
               </Link>
-              <Link
-                to="/features"
-                className="text-gray-600 hover:text-gray-900">
-                Features
-              </Link>
-              <Link to="/pricing" className="text-gray-600 hover:text-gray-900">
-                Pricing
-              </Link>
+ 
             </nav>
             <div className="flex items-center space-x-4">
               <button className="text-gray-600 hover:text-gray-900">
                 Sign in
               </button>
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                Sign up free
-              </button>
+            
             </div>
           </div>
         </div>

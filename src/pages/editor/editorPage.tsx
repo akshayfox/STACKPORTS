@@ -75,36 +75,36 @@ const api = {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/designs/${id}`,
-        { 
+        {
           method: "PUT",
           headers: {
-            'Content-Type': 'application/json', // Ensure JSON content type
+            "Content-Type": "application/json", // Ensure JSON content type
           },
-          body: JSON.stringify({ name }) // Properly formatted JSON
+          body: JSON.stringify({ name }), // Properly formatted JSON
         }
       );
-  
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         return {
           success: false,
-          error: error.message || 'Failed to update name'
+          error: error.message || "Failed to update name",
         };
       }
-  
+
       const result = await response.json();
       return {
         success: true,
-        design: result.design
+        design: result.design,
       };
     } catch (error) {
-      console.error('Update name error:', error);
+      console.error("Update name error:", error);
       return {
         success: false,
-        error: 'Network error occurred'
+        error: "Network error occurred",
       };
     }
-  }
+  },
 };
 
 const EditorPage: React.FC = () => {
@@ -115,46 +115,36 @@ const EditorPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [tempName, setTempName] = useState(activeTemplate?.name || '');
-
-
-
+  const [tempName, setTempName] = useState(activeTemplate?.name || "");
 
   useEffect(() => {
-    setTempName(activeTemplate?.name || '');
+    setTempName(activeTemplate?.name || "");
   }, [activeTemplate?.name]);
-
-
 
   const handleNameSave = async () => {
     if (!activeTemplate?._id) {
       setIsEditingName(false);
       return;
     }
-  
     const trimmedName = tempName.trim();
-    
-    // Don't save if name didn't change
     if (trimmedName === activeTemplate.name) {
       setIsEditingName(false);
       return;
     }
-  
     try {
       const result = await api.updateName(
         activeTemplate._id,
         trimmedName // Just the string
       );
-      
       if (result.success && result.design) {
         setActiveTemplate(result.design);
       } else {
-        setTempName(activeTemplate.name || '');
-        alert(result.error || 'Failed to update name');
+        setTempName(activeTemplate.name || "");
+        alert(result.error || "Failed to update name");
       }
     } catch (error) {
       console.error("Name update error:", error);
-      setTempName(activeTemplate.name || '');
+      setTempName(activeTemplate.name || "");
       alert("Failed to update design name");
     } finally {
       setIsEditingName(false);
@@ -226,7 +216,6 @@ const EditorPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!activeTemplate) return;
-
     try {
       const thumbnail = await captureCanvas(canvasRef, activeTemplate);
       const formData = new FormData();
@@ -279,39 +268,37 @@ const EditorPage: React.FC = () => {
               <Home className="w-5 h-5 text-purple-700" />
             </button>
             <div className="hidden md:flex items-center space-x-2">
-  {isEditingName ? (
-    <input
-      type="text"
-      value={tempName}
-      onChange={(e) => setTempName(e.target.value)}
-      onBlur={handleNameSave}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') handleNameSave();
-        if (e.key === 'Escape') {
-          setTempName(activeTemplate?.name || '');
-          setIsEditingName(false);
-        }
-      }}
-      className="font-semibold text-gray-700 w-[150px] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500"
-      autoFocus
-    />
-  ) : (
-    <>
-      <span 
-        className="font-semibold text-gray-700 truncate max-w-[150px] cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
-        onClick={() => setIsEditingName(true)}
-      >
-        {activeTemplate?.name || "Untitled Design"}
-      </span>
-      <button 
-        onClick={() => setIsEditingName(true)}
-        className="text-gray-500 hover:text-gray-700"
-      >
-        <ChevronDown className="w-4 h-4" />
-      </button>
-    </>
-  )}
-</div>
+              {isEditingName ? (
+                <input
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  onBlur={handleNameSave}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleNameSave();
+                    if (e.key === "Escape") {
+                      setTempName(activeTemplate?.name || "");
+                      setIsEditingName(false);
+                    }
+                  }}
+                  className="font-semibold text-gray-700 w-[150px] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  autoFocus
+                />
+              ) : (
+                <>
+                  <span
+                    className="font-semibold text-gray-700 truncate max-w-[150px] cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                    onClick={() => setIsEditingName(true)}>
+                    {activeTemplate?.name || "Untitled Design"}
+                  </span>
+                  <button
+                    onClick={() => setIsEditingName(true)}
+                    className="text-gray-500 hover:text-gray-700">
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center space-x-2 flex-1 justify-center" />
