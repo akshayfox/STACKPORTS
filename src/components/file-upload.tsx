@@ -98,8 +98,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ images, refreshFiles }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Your Uploads</h3>
+      <div className="flex justify-between items-center mb-4 ">
         <div className="flex gap-2">
           <button
             onClick={toggleSelectMode}
