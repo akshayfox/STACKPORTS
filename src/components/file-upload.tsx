@@ -1,5 +1,5 @@
 import { useEditorStore } from "@/store/editorStore";
-import { Element, MenuItem, UploadedImage } from "@/types/editor";
+import { Element, UploadedImage } from "@/types/editor";
 import React, { useState } from "react";
 import { nanoid } from "nanoid";
 import axios from "axios";
