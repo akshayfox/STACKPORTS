@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import DataEntryModal from "@/components/modal/DataEntryModal";
 import { useEditorStore } from "@/store/editorStore";
+import NoDataFoundPage from "../NoDataFound";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -190,31 +191,34 @@ const TemplatePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b"></div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
-          {templates.map((template: Template) => (
-            <Card
-              key={template?._id}
-              className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
-              // onMouseEnter={() => setHoveredId(template.id)}
-              // onMouseLeave={() => setHoveredId(null)}
-              onContextMenu={(e) => handleRightClick(e, template)}>
-              {template.thumbnail && (
-                <div className="overflow-hidden rounded-md">
-                  <img
-                    src={`${import.meta.env.VITE_IMAGE_URL}/${
-                      template.thumbnail
-                    }`}
-                    alt={`${template.name} Thumbnail`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-            </Card>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
+  {templates.length > 0 ? (
+    templates.map((template: Template) => (
+      <Card
+        key={template?._id}
+        className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
+        onContextMenu={(e) => handleRightClick(e, template)}
+      >
+        {template.thumbnail && (
+          <div className="overflow-hidden rounded-md">
+            <img
+              src={`${import.meta.env.VITE_IMAGE_URL}/${template.thumbnail}`}
+              alt={`${template.name} Thumbnail`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+      </Card>
+    ))
+  ) : (
+    <div className="col-span-full text-center text-gray-500 text-lg">
+     <NoDataFoundPage/>
+    </div>
+  )}
+</div>
+
       </div>
 
       <ContextMenu

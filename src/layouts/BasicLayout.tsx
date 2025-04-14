@@ -7,20 +7,13 @@ interface HeaderTitleMap {
   [key: string]: string;
 }
 
-const headerTitles: HeaderTitleMap = {
-  "/dashboard": "Dashboard",
-  "/clients": "Client Management",
-  "/groups": "Group Organization",
-  "/templates": "Templates Library",
-  "/settings": "System Settings",
-  "/help": "Help & Support",
-  "/editor": "Design Editor",
-};
+
 
 function BasicLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Close sidebar when screen size changes
   useEffect(() => {
@@ -38,25 +31,39 @@ function BasicLayout() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!event.target) return;
-      
-      const sidebar = document.getElementById('sidebar');
+
+      const sidebar = document.getElementById("sidebar");
       const target = event.target as Element;
-      
-      if (sidebarOpen && 
-          sidebar && 
-          !sidebar.contains(target) && 
-          !target.closest('#sidebarToggle')) {
+
+      if (
+        sidebarOpen &&
+        sidebar &&
+        !sidebar.contains(target) &&
+        !target.closest("#sidebarToggle")
+      ) {
         setSidebarOpen(false);
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const dropdown = document.getElementById("dropdownMenu");
+      const target = event.target as Node;
 
+      if (dropdown && !dropdown.contains(target)) {
+        setDropdownOpen(false);
+      }
+    };
 
-  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (window.innerWidth <= 768) {
       setSidebarOpen(false);
@@ -67,9 +74,14 @@ function BasicLayout() {
     navigate("/editor");
   };
 
+  const handleLogout = () => {
+    // You can clear tokens or localStorage here
+    // Example: localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 z-20 md:hidden" />
       )}
@@ -90,10 +102,8 @@ function BasicLayout() {
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <div className="flex-1 text-lg font-medium text-gray-800 ml-3 md:ml-0">
-                {headerTitles[location.pathname] || ""}
-              </div>
-              <div className="flex items-center space-x-4">
+
+              <div className="flex items-center space-x-4 ml-auto">
                 <button
                   onClick={handleCreateDesign}
                   className="md:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors shadow-sm flex items-center justify-center"
@@ -101,15 +111,27 @@ function BasicLayout() {
                   <Plus className="h-5 w-5" />
                 </button>
 
-                <button className="p-1 rounded-full hover:bg-gray-100 relative">
-                  <Bell className="h-5 w-5 text-gray-500" />
-                  <span className="absolute top-0 right-0 bg-red-500 h-2 w-2 rounded-full"></span>
-                </button>
-
-                <div className="md:hidden">
-                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <div className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center focus:outline-none"
+                  >
                     <span className="text-xs font-medium text-blue-600">JD</span>
-                  </div>
+                  </button>
+
+                  {dropdownOpen && (
+                    <div
+                      id="dropdownMenu"
+                      className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-30"
+                    >
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
