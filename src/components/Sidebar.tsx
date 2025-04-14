@@ -8,6 +8,7 @@ import {
   Layers,
   X,
   PenTool,
+  Home,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -29,6 +30,11 @@ const navItems: NavItemProps[] = [
     to: "/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
     label: "Dashboard",
+  },
+  {
+    to: "/home",
+    icon: <Home className="h-5 w-5" />,
+    label: "Home",
   },
   {
     to: "/clients",
@@ -180,11 +186,7 @@ function NavItem({ to, icon, label, isActive = false, badge }: NavItemProps) {
         {icon}
       </div>
       <span className="text-sm font-medium flex-1">{label}</span>
-      {badge && (
-        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
-          {badge}
-        </span>
-      )}
+
     </Link>
   );
 }

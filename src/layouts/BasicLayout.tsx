@@ -138,7 +138,7 @@ function BasicLayout() {
           </div>
         </header>
 
-        <main className="p-4 md:p-6">
+        <main className="p-w md:p-4 rounded-md">
           <Outlet />
         </main>
       </div>
