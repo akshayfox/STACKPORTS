@@ -54,7 +54,9 @@ function BasicLayout() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [sidebarOpen]);
 
-  // Close sidebar when route changes on mobile
+
+
+  
   useEffect(() => {
     if (window.innerWidth <= 768) {
       setSidebarOpen(false);
@@ -71,15 +73,11 @@ function BasicLayout() {
       {sidebarOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 z-20 md:hidden" />
       )}
-
-      {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onCreateDesign={handleCreateDesign}
       />
-
-      {/* Main Content */}
       <div className="flex-1 md:ml-64">
         <header className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4">
@@ -92,13 +90,9 @@ function BasicLayout() {
               >
                 <Menu className="h-5 w-5" />
               </button>
-
-              {/* Page Title */}
               <div className="flex-1 text-lg font-medium text-gray-800 ml-3 md:ml-0">
                 {headerTitles[location.pathname] || ""}
               </div>
-
-              {/* Right side header items */}
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleCreateDesign}
