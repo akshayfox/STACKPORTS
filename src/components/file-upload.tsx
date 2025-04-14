@@ -3,7 +3,6 @@ import { Element, UploadedImage } from "@/types/editor";
 import React, { useState } from "react";
 import { nanoid } from "nanoid";
 import axios from "axios";
-import NoDataFoundPage from "@/pages/NoDataFound";
 
 type FileUploadProps = {
   images: UploadedImage[]; // or whatever your image type is

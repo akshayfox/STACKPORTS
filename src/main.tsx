@@ -11,6 +11,7 @@ import Groups from "./pages/Groups";
 import HomePage from "./pages/home/HomePage";
 import EditorPage from "./pages/editor/editorPage";
 import TemplatePage from "./pages/template/TemplatePage";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/editor/:id?", // standalone route (no layout)
     element: <EditorPage />,
+  },
+  {
+    path: "/login", // standalone route (no layout)
+    element: <Login />,
   },
 ]);
 

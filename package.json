@@ -23,6 +23,7 @@
     "dom-to-image": "^2.6.0",
     "firebase": "^11.2.0",
     "firebase-tools": "^13.29.1",
+    "formik": "^2.4.6",
     "framer-motion": "^12.6.5",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
@@ -33,6 +34,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.5",
+    "yup": "^1.6.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
