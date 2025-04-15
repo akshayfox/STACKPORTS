@@ -147,27 +147,26 @@ export default function Clients() {
     }),
   ];
 
+  // In your Clients.tsx file, update the return statement:
+  
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Clients</h1>
       
-      <div className="mb-4">
-        <Button onClick={handleAddClient}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Client
-        </Button>
-      </div>
-      
       {isLoading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
       ) : (
         <DataTable 
-          data={clients?.clients||[]} 
+          data={clients?.clients || []} 
           columns={columns} 
           searchPlaceholder="Search clients..." 
+          onAddClick={handleAddClient}
+          addButtonText="Add Client"
         />
       )}
-
+  
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
