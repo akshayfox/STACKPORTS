@@ -1,7 +1,6 @@
-import create from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -9,7 +8,7 @@ interface AuthState {
   user: { id: string; email: string } | null;
   error: string | null;
   isLoading: boolean;
-  login: (username: string, password: string, navigate: any) => Promise<void>; // Added navigate
+  login: (username: string, password: string, navigate: (path: string) => void) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;
 }
@@ -29,8 +28,7 @@ export const useAuthStore = create<AuthState>()(
       error: null,
       isLoading: false,
 
-      login: async (username: string, password: string,navigate:any) => {
-
+      login: async (username, password, navigate) => {
         set({ isLoading: true, error: null });
         try {
           const response = await api.post('/auth/login', {username, password });
@@ -44,7 +42,7 @@ export const useAuthStore = create<AuthState>()(
           });
           // Optionally set token in axios headers for subsequent requests
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          navigate('/dashboard')
+          navigate('/')
         } catch (error: any) {
           const errorMessage =
             error.response?.data?.message || 'Login failed. Please try again.';
@@ -88,7 +86,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage', // Key for localStorage
-      getStorage: () => localStorage, // Use localStorage for persistence
+      storage: createJSONStorage(() => localStorage), // Updated from getStorage to storage with createJSONStorage
     }
   )
 );

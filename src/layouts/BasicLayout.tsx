@@ -2,18 +2,14 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Menu, Bell, Plus } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
-
-interface HeaderTitleMap {
-  [key: string]: string;
-}
-
-
+import { useAuthStore } from "@/store/authStore";
 
 function BasicLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { logout } = useAuthStore();
 
   // Close sidebar when screen size changes
   useEffect(() => {
@@ -75,9 +71,8 @@ function BasicLayout() {
   };
 
   const handleLogout = () => {
-    // You can clear tokens or localStorage here
-    // Example: localStorage.removeItem("token");
-    navigate("/login");
+    logout();
+    navigate("/login",{replace:true});
   };
 
   return (
@@ -98,36 +93,33 @@ function BasicLayout() {
               <button
                 id="sidebarToggle"
                 className="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
+                onClick={() => setSidebarOpen(!sidebarOpen)}>
                 <Menu className="h-5 w-5" />
               </button>
 
               <div className="flex items-center space-x-4 ml-auto">
                 <button
                   onClick={handleCreateDesign}
-                  className="md:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors shadow-sm flex items-center justify-center"
-                >
+                  className="md:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors shadow-sm flex items-center justify-center">
                   <Plus className="h-5 w-5" />
                 </button>
 
                 <div className="relative">
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center focus:outline-none"
-                  >
-                    <span className="text-xs font-medium text-blue-600">JD</span>
+                    className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center focus:outline-none">
+                    <span className="text-xs font-medium text-blue-600">
+                      JD
+                    </span>
                   </button>
 
                   {dropdownOpen && (
                     <div
                       id="dropdownMenu"
-                      className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-30"
-                    >
+                      className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-30">
                       <button
                         onClick={handleLogout}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                      >
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
                         Logout
                       </button>
                     </div>

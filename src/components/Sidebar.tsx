@@ -27,7 +27,7 @@ interface NavItemProps {
 
 const navItems: NavItemProps[] = [
   {
-    to: "/dashboard",
+    to: "/",
     icon: <LayoutDashboard className="h-5 w-5" />,
     label: "Dashboard",
   },
@@ -59,12 +59,13 @@ function Sidebar({ isOpen, onClose, onCreateDesign }: SidebarProps) {
   const location = useLocation();
 
   const isActive = (path: string) => {
-    return location.pathname.startsWith(path);
-  };
+    if (path === "/") {
+      return location.pathname === "/" 
+    }
+    return location.pathname.startsWith(path);  };
 
   return (
     <>
-      {/* Mobile Sidebar */}
       <div
         id="sidebar"
         className={`fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-30 md:hidden ${
