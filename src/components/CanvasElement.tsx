@@ -60,13 +60,18 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
     overflow: "hidden",
   }), [transformStyle, element.style]);
 
-  // Common content style
-  const contentStyle: React.CSSProperties = useMemo(() => ({
-    width: "100%",
-    height: "100%",
-    borderRadius: `${element.style.borderRadius || 0}px`,
-    overflow: "hidden",
-  }), [element.style.borderRadius]);
+
+const validTextAligns = ["left", "right", "center", "justify", "start", "end"] as const;
+
+const contentStyle: React.CSSProperties = useMemo(() => ({
+  width: "100%",
+  height: "100%",
+  borderRadius: `${element.style.borderRadius || 0}px`,
+  overflow: "hidden",
+  textAlign: validTextAligns.includes(element.style.textAlign as any)
+    ? element.style.textAlign as React.CSSProperties["textAlign"]
+    : "left",
+}), [element.style.borderRadius, element.style.textAlign]);
 
 
 

@@ -27,6 +27,7 @@ interface ElementStyle {
   fontSize?: number;
   color?: string;
   path?: string;
+  textAlign?:string
 }
 
 interface EditorElement {
@@ -112,6 +113,8 @@ const Toolbar: React.FC = () => {
         color: "#000000",
         shapeType: "text",
         backgroundColor: "transparent",
+        textAlign:'center'
+        
       },
     };
     addElement(element);
