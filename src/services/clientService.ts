@@ -4,10 +4,8 @@ import { useAuthStore } from '@/store/authStore';
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/clients`;
 
-// Helper to create headers with auth token from the auth store
 const getHeaders = () => {
   const token = useAuthStore.getState().token;
-  
   if (!token) {
     console.warn('No authentication token found in auth store');
     return {};
