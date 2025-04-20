@@ -1,16 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEditorStore } from "../store/editorStore";
-import {
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-
-} from "lucide-react";
+import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from "lucide-react";
+import { Switch } from "./ui/switch";
 
 const PropertyPanel: React.FC = () => {
   const { selectedElement, updateElement } = useEditorStore();
-
+  const [fieldLabel, setFieldLabel] = useState("");
+  const [isDynamic, setIsDynamic] = useState(false);
   if (!selectedElement) {
     return (
       <div className="bg-white p-4 shadow-lg rounded-lg">
@@ -21,12 +17,33 @@ const PropertyPanel: React.FC = () => {
     );
   }
 
+  const handleFieldLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newLabel = e.target.value;
+    setFieldLabel(newLabel);
+    if (isDynamic) {
+      updateElement(selectedElement.id, {
+        fieldName: newLabel,
+        content: newLabel,
+      });
+    }
+  };
+
   const handleStyleChange = (property: string, value: string | number) => {
     updateElement(selectedElement.id, {
       style: {
         ...selectedElement.style,
         [property]: value,
       },
+    });
+  };
+
+  const handleDynamicToggle = (checked: boolean) => {
+    setIsDynamic(checked);
+    const field = fieldLabel || `field_${Date.now()}`;
+    updateElement(selectedElement.id, {
+      dynamic: checked,
+      fieldName: checked ? field : undefined,
+      content: checked ? `${field}` : "Double click to edit",
     });
   };
 
@@ -40,6 +57,35 @@ const PropertyPanel: React.FC = () => {
 
       {selectedElement.type === "text" && (
         <>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                Dynamic Field
+              </label>
+              <Switch
+                checked={selectedElement.dynamic}
+                onCheckedChange={handleDynamicToggle}
+              />
+            </div>
+
+            {selectedElement.dynamic && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Field Label
+                </label>
+                <input
+                  type="text"
+                  value={selectedElement.fieldName}
+                  onChange={handleFieldLabelChange}
+                  placeholder="Enter field name (e.g., student_name)"
+                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This will be used as the data key when generating IDs
+                </p>
+              </div>
+            )}
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Text Align
@@ -122,6 +168,51 @@ const PropertyPanel: React.FC = () => {
             />
           </div>
         </>
+      )}
+
+      {selectedElement.type === "image" && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-gray-700">
+              Dynamic Field
+            </label>
+            <Switch
+              checked={selectedElement.dynamic}
+              onCheckedChange={(checked) => {
+                setIsDynamic(checked);
+                const field = fieldLabel || `image_${Date.now()}`;
+                updateElement(selectedElement.id, {
+                  dynamic: checked,
+                  fieldName: checked ? field : undefined,
+                });
+              }}
+            />
+          </div>
+
+          {selectedElement.dynamic && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Field Label
+              </label>
+              <input
+                type="text"
+                value={selectedElement.fieldName}
+                onChange={(e) => {
+                  const label = e.target.value;
+                  setFieldLabel(label);
+                  updateElement(selectedElement.id, {
+                    fieldName: label,
+                  });
+                }}
+                placeholder="Enter field name (e.g., student_photo)"
+                className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This will be replaced with an image URL when generating IDs.
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
       <div>

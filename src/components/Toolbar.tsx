@@ -2,20 +2,13 @@ import React, { useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
-
-// Local components
 import FileUpload from "./file-upload";
 import ImageGallery from "./toolbar-components/ImageGallery";
 import ShapeGallery from "./toolbar-components/shape-gallery";
-
-// Constants and store
 import { icons } from "@/constants/Icons";
 import { useEditorStore } from "@/store/editorStore";
-
-// Types
 import { MenuItem } from "@/types/editor";
 
-// Types - could be moved to a separate types file
 interface ElementStyle {
   x: number;
   y: number;
@@ -35,6 +28,8 @@ interface EditorElement {
   type: "text" | "image" | "shape";
   content: string;
   style: ElementStyle;
+  dynamic?: boolean; // New field to identify dynamic text
+  fieldName?: string;
 }
 
 
@@ -99,27 +94,29 @@ const Toolbar: React.FC = () => {
 
 
 
-  const addText = useCallback(() => {
+  const addText = useCallback((isDynamic = false, fieldName = "") => {
     const element: EditorElement = {
       id: nanoid(),
       type: "text",
-      content: "Double click to edit",
+      content: isDynamic ? `{${fieldName}}` : "Double click to edit",
       style: {
         ...DEFAULT_POSITION,
         width: 200,
         height: 50,
         rotation: 0,
         fontSize: 16,
-        color: "#000000",
+        color: isDynamic ? "#FF5722" : "#000000", // Different color for dynamic fields
         shapeType: "text",
         backgroundColor: "transparent",
-        textAlign:'center'
-        
+        textAlign: "center"
       },
+      dynamic: isDynamic,
+      fieldName: isDynamic ? fieldName : undefined
     };
     addElement(element);
   }, [addElement]);
 
+  
   const addShape = useCallback((shapeType: string) => {
     const element: EditorElement = {
       id: nanoid(),
@@ -137,7 +134,7 @@ const Toolbar: React.FC = () => {
     addElement(element);
   }, [addElement]);
 
-  // File upload handlers
+
   const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -145,10 +142,8 @@ const Toolbar: React.FC = () => {
   const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
-    
     const formData = new FormData();
     Array.from(files).forEach(file => formData.append("images", file));
-    
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/image/upload`,
@@ -159,7 +154,6 @@ const Toolbar: React.FC = () => {
           },
         }
       );
-      
       if (response.status === 200) {
         refetchImages();
       } else {
@@ -170,6 +164,9 @@ const Toolbar: React.FC = () => {
     }
   }, [refetchImages]);
 
+
+
+  
   // Menu items configuration
   const menuItems: MenuItem[] = [
     {
@@ -200,7 +197,8 @@ const Toolbar: React.FC = () => {
     },
   ];
 
-  // Render sidebar content based on active item
+
+
   const renderSidebarContent = () => {
     if (!activeItem) return null;
     
@@ -270,7 +268,7 @@ const Toolbar: React.FC = () => {
               {TEXT_STYLES.map((style) => (
                 <div
                   key={style.type}
-                  onClick={addText}
+                  onClick={()=>addText(false,"")}
                   className="p-3 rounded-lg bg-gray-100 hover:bg-gray-200 cursor-pointer transition-all duration-200"
                 >
                   <div

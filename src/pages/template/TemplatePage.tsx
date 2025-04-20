@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import {
-  Edit,
-  Copy,
-  Trash,
-  Share,
-  LucideIcon,
-  Plus,
-} from "lucide-react";
+import { Edit, Copy, Trash, Share, LucideIcon, Plus } from "lucide-react";
 import axios from "axios";
 import { ContextMenuState, Template } from "@/types/editor";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +18,7 @@ import {
 import DataEntryModal from "@/components/modal/DataEntryModal";
 import { useEditorStore } from "@/store/editorStore";
 import NoDataFoundPage from "../NoDataFound";
+import DynamicFormModal from "@/components/dynamic-form";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -89,10 +83,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 const TemplatePage: React.FC = () => {
   const navigate = useNavigate();
-  const {
-    activeTemplate,
-    setActiveTemplate,
-  } = useEditorStore();
+  const { activeTemplate, setActiveTemplate } = useEditorStore();
 
   const queryClient = useQueryClient();
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
@@ -103,6 +94,7 @@ const TemplatePage: React.FC = () => {
   });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDataEntry, setshowDataEntry] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: templates,
@@ -166,8 +158,7 @@ const TemplatePage: React.FC = () => {
       case "share":
         break;
       case "create":
-        console.log("working");
-        setshowDataEntry(true);
+        setIsModalOpen(true)
         break;
       case "delete":
         setShowDeleteDialog(true);
@@ -191,34 +182,33 @@ const TemplatePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
-  {templates.length > 0 ? (
-    templates.map((template: Template) => (
-      <Card
-        key={template?._id}
-        className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
-        onContextMenu={(e) => handleRightClick(e, template)}
-      >
-        {template.thumbnail && (
-          <div className="overflow-hidden rounded-md">
-            <img
-              src={`${import.meta.env.VITE_IMAGE_URL}/${template.thumbnail}`}
-              alt={`${template.name} Thumbnail`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-      </Card>
-    ))
-  ) : (
-    <div className="col-span-full text-center text-gray-500 text-lg">
-     <NoDataFoundPage/>
-    </div>
-  )}
-</div>
-
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
+          {templates.length > 0 ? (
+            templates.map((template: Template) => (
+              <Card
+                key={template?._id}
+                className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
+                onContextMenu={(e) => handleRightClick(e, template)}>
+                {template.thumbnail && (
+                  <div className="overflow-hidden rounded-md">
+                    <img
+                      src={`${import.meta.env.VITE_IMAGE_URL}/${
+                        template.thumbnail
+                      }`}
+                      alt={`${template.name} Thumbnail`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500 text-lg">
+              <NoDataFoundPage />
+            </div>
+          )}
+        </div>
       </div>
 
       <ContextMenu
@@ -254,6 +244,10 @@ const TemplatePage: React.FC = () => {
         setOpen={setshowDataEntry}
         template={activeTemplate}
       />
+
+      {isModalOpen && (
+        <DynamicFormModal designId={activeTemplate?._id} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };

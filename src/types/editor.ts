@@ -2,6 +2,7 @@ import { LucideIcon } from "lucide-react";
 
 export interface Element {
   id: string;
+  _id?: string;
   type: "text" | "image" | "shape" | "textarea" | "button";
   content: string;
   style: {
@@ -15,19 +16,26 @@ export interface Element {
     color?: string;
     backgroundColor?: string;
     borderRadius?: number;
-    fontWeight?: string,
-    fontStyle?:string,
-    textAlign?:string
-
+    fontWeight?: string;
+    fontStyle?: string;
+    textAlign?: string;
   };
+  dynamic?: boolean;
+  fieldName?: string;
   placeholder?: string;
   label?: string;
   required?: boolean;
   options?: Array<{ value: string; label: string }>;
+  metadata?: {
+    isEditable?: boolean;
+    isRequired?: boolean;
+    defaultValue?: string;
+    fieldLabel?: string; // optional, if you're using it elsewhere
+  };
+  textAlign?: string;
+  createdAt?: string;
+  updatedAt?:string;
 }
-
-
-
 
 export interface Template {
   _id?: string;
@@ -40,7 +48,6 @@ export interface Template {
     height?: number;
   };
 }
-
 
 export interface FormElement extends Element {
   options?: Array<{ value: string; label: string }>;
@@ -73,20 +80,18 @@ export interface ContextMenuProps {
   onOptionClick: (action: string) => void;
 }
 
-
 export type MenuItem = {
   name: string;
   icon: React.ReactNode;
   content?: { name: string; url: string; _id: string }[];
-  action?: () => void;};
-
+  action?: () => void;
+};
 
 export type UploadResponse = {
   success: boolean;
   files: Array<{ name: string; url: string }>; // Removed `type` property
   message?: string;
 };
-
 
 export type UploadedImage = {
   _id: string;

@@ -21,13 +21,9 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
   const [isResizing, setIsResizing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const currentStyleRef = useRef(element.style);
-  
   const { selectedElement, setSelectedElement, updateElement } = useEditorStore();
   const isSelected = selectedElement?.id === element.id;
-
-  // Only enable drag if not resizing or editing
   const shouldEnableDrag = drag && !isResizing && !isEditing;
-  
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: element.id,
     disabled: !shouldEnableDrag
@@ -37,7 +33,6 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
     currentStyleRef.current = element.style;
   }, [element.style]);
 
-  // Transform style for dragging
   const transformStyle = useMemo(() => {
     if (transform && shouldEnableDrag) {
       return `translate3d(${transform.x}px, ${transform.y}px, 0)`;
@@ -45,7 +40,6 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
     return undefined;
   }, [transform, shouldEnableDrag]);
 
-  // Element style computation
   const style = useMemo(() => ({
     position: "absolute" as const,
     transform: transformStyle,
@@ -57,7 +51,7 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
     fontSize: `${element.style.fontSize}px`,
     color: element.style.color,
     borderRadius: element.style.borderRadius ? `${element.style.borderRadius}%` : "0%",
-    overflow: "hidden",
+    // overflow: "hidden",
   }), [transformStyle, element.style]);
 
 
@@ -67,7 +61,7 @@ const contentStyle: React.CSSProperties = useMemo(() => ({
   width: "100%",
   height: "100%",
   borderRadius: `${element.style.borderRadius || 0}px`,
-  overflow: "hidden",
+  // overflow: "hidden",
   textAlign: validTextAligns.includes(element.style.textAlign as any)
     ? element.style.textAlign as React.CSSProperties["textAlign"]
     : "left",
@@ -190,6 +184,7 @@ const contentStyle: React.CSSProperties = useMemo(() => ({
             {element.content}
           </p>
         );
+        
       
       case "image":
         return (
