@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   Palette,
-  User,
   LayoutDashboard,
   Users,
   Folder,
@@ -154,28 +153,12 @@ function SidebarContent({
         </nav>
       </div>
 
-      {/* User Profile */}
-      <div className="border-t border-gray-100 p-4">
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0">
-            <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center">
-              <User className="h-5 w-5 text-blue-600" />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">John Doe</p>
-            <p className="text-xs text-gray-500 truncate">Administrator</p>
-          </div>
-          <div className="flex-shrink-0">
-            <span className="inline-block h-2 w-2 rounded-full bg-green-400"></span>
-          </div>
-        </div>
-      </div>
+  
     </div>
   );
 }
 
-function NavItem({ to, icon, label, isActive = false, badge }: NavItemProps) {
+function NavItem({ to, icon, label, isActive = false }: NavItemProps) {
   return (
     <Link
       to={to}

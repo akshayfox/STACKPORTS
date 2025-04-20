@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { Client } from '@/types/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClients, deleteClient } from '@/services/clientService';
 import { Button } from '@/components/ui/button';
-import { Edit, FileText} from 'lucide-react';
+import { DeleteIcon, Edit, FileText, MoreVertical} from 'lucide-react';
 import ClientModal from '@/components/modal/ClientModal';
-import DeleteModal from '@/components/modal/DeleteModal';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { useNavigate } from 'react-router-dom';
 
 export default function Clients() {
@@ -77,29 +82,32 @@ export default function Clients() {
       cell: info => {
         const client = info.row.original;
         return (
-          <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => handleEditClient(client)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            title='form'
-            size="sm"
-            onClick={() => navigate(`/form/${client.template._id}`)}
-            >
-            <FileText className="h-4 w-4" />
-          </Button>
-          <DeleteModal
-            title="Are you sure?"
-            description="This action cannot be undone. This will permanently delete the client."
-            onDelete={() => deleteMutation.mutate(client._id)}
-            isDeleting={deleteMutation.isPending}
-          />
-        </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleEditClient(client)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/form/${client.template._id}`)}>
+                <FileText className="mr-2 h-4 w-4" />
+                View Form
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => deleteMutation.mutate(client._id)}
+                disabled={deleteMutation.isPending}
+                className="text-red-600 focus:text-red-600"
+              >
+                <DeleteIcon className="mr-2 h-4 w-4" />
+
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     }),

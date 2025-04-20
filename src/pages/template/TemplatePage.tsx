@@ -45,6 +45,14 @@ const deleteTemplate = async (templateId: string) => {
   return response.data;
 };
 
+const duplicateTemplate = async (templateId: string, newName: string) => {
+  const response = await axios.post(
+    `${import.meta.env.VITE_BASE_URL}/designs/${templateId}/copy`,
+    { newName }
+  );
+  return response.data;
+};
+
 const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
@@ -95,6 +103,8 @@ const TemplatePage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDataEntry, setshowDataEntry] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
 
   const {
     data: templates,
@@ -154,6 +164,8 @@ const TemplatePage: React.FC = () => {
         navigate(`/editor/${contextMenu.template?._id}`);
         break;
       case "duplicate":
+        setNewTemplateName(`${contextMenu.template.name} (Copy)`);
+        setShowDuplicateDialog(true);
         break;
       case "share":
         break;
@@ -248,6 +260,42 @@ const TemplatePage: React.FC = () => {
       {isModalOpen && (
         <DynamicFormModal designId={activeTemplate?._id} onClose={() => setIsModalOpen(false)} />
       )}
+
+      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicate Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              <input
+                type="text"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                className="w-full p-2 border rounded mt-2"
+                placeholder="Enter new template name"
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (contextMenu.template?._id) {
+                  try {
+                    await duplicateTemplate(contextMenu.template._id, newTemplateName);
+                    queryClient.invalidateQueries({ queryKey: ["designs"] });
+                    setShowDuplicateDialog(false);
+                  } catch (error) {
+                    console.error("Error duplicating template:", error);
+                  }
+                }
+              }}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              Duplicate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

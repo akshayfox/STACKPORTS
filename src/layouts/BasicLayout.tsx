@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Menu, Bell, Plus } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { useAuthStore } from "@/store/authStore";
 
