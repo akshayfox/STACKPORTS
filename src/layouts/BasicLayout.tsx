@@ -1,8 +1,9 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, Plus } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { useAuthStore } from "@/store/authStore";
+import { NewDesignDialog } from "@/components/ui/NewDesignDialog";
 
 function BasicLayout() {
   const location = useLocation();
@@ -10,6 +11,11 @@ function BasicLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { logout } = useAuthStore();
+
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const handleCreate = () => {
+    setIsDialogOpen(true);
+  };
 
   // Close sidebar when screen size changes
   useEffect(() => {
@@ -66,13 +72,13 @@ function BasicLayout() {
     }
   }, [location.pathname]);
 
-  const handleCreateDesign = () => {
-    navigate("/editor");
+  const handleCreateDesign = (width: number, height: number) => {
+    navigate("/editor", { state: { width, height } });
   };
 
   const handleLogout = () => {
     logout();
-    navigate("/login",{replace:true});
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -83,7 +89,7 @@ function BasicLayout() {
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        onCreateDesign={handleCreateDesign}
+        onCreateDesign={handleCreate}
       />
       <div className="flex-1 md:ml-64">
         <header className="bg-white shadow-sm sticky top-0 z-10">
@@ -99,7 +105,7 @@ function BasicLayout() {
 
               <div className="flex items-center space-x-4 ml-auto">
                 <button
-                  onClick={handleCreateDesign}
+                  onClick={handleCreate}
                   className="md:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors shadow-sm flex items-center justify-center">
                   <Plus className="h-5 w-5" />
                 </button>
@@ -134,6 +140,12 @@ function BasicLayout() {
           <Outlet />
         </main>
       </div>
+
+      <NewDesignDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSubmit={handleCreateDesign}
+      />
     </div>
   );
 }

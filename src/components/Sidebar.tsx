@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   Palette,
-  LayoutDashboard,
   Users,
   Folder,
   Layers,
@@ -25,11 +24,11 @@ interface NavItemProps {
 }
 
 const navItems: NavItemProps[] = [
-  {
-    to: "/",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    label: "Dashboard",
-  },
+  // {
+  //   to: "/",
+  //   icon: <LayoutDashboard className="h-5 w-5" />,
+  //   label: "Dashboard",
+  // },
   {
     to: "/home",
     icon: <Home className="h-5 w-5" />,
@@ -101,7 +100,6 @@ function SidebarContent({
 }) {
   return (
     <div className="flex flex-col h-full">
-      {/* Logo and Close Button */}
       <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100">
         <div className="flex items-center">
           <Palette className="h-7 w-7 text-blue-600" />
@@ -114,8 +112,6 @@ function SidebarContent({
           <X className="h-5 w-5 text-gray-500" />
         </button>
       </div>
-
-      {/* Create Design Button */}
       <div className="px-4 py-4">
         <button
           onClick={onCreateDesign}
@@ -125,24 +121,13 @@ function SidebarContent({
           <span className="font-medium">Create Design</span>
         </button>
       </div>
-
-      {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-2">
         <nav className="px-2 space-y-6">
-          {/* Overview Section */}
           <div className="space-y-1">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
-              Overview
+              Menu
             </h3>
-            <NavItem {...navItems[0]} isActive={isActive(navItems[0].to)} />
-          </div>
-
-          {/* Management Section */}
-          <div className="space-y-1">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
-              Management
-            </h3>
-            {navItems.slice(1).map((item) => (
+            {navItems.map((item) => (
               <NavItem
                 key={item.to}
                 {...item}

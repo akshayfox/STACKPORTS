@@ -1,13 +1,20 @@
-import { Palette, Wand2, Users, Sparkles, ChevronRight } from "lucide-react";
+import { Palette, Wand2, Sparkles, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion"; // For animations
+import React from "react";
+import { NewDesignDialog } from "@/components/ui/NewDesignDialog";
 
 function HomePage() {
   const navigate = useNavigate();
 
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const handleCreate = () => {
-    navigate("/editor", { state: { width: 235, height: 400 } });
-  };
+setIsDialogOpen(true);
+};
+
+const handleSubmit = (width: number, height: number) => {
+  navigate("/editor", { state: { width, height } });
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,6 +53,11 @@ function HomePage() {
 
           {/* Buttons with Hover Effects */}
           <div className="flex justify-center flex-wrap gap-4">
+<NewDesignDialog
+  open={isDialogOpen}
+  onOpenChange={setIsDialogOpen}
+  onSubmit={handleSubmit}
+/>
             <motion.button
               onClick={handleCreate}
               whileHover={{ scale: 1.05 }}
@@ -115,3 +127,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
