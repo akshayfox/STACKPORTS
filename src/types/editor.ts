@@ -19,6 +19,7 @@ export interface Element {
     fontWeight?: string;
     fontStyle?: string;
     textAlign?: string;
+    fontFamily?:string
   };
   dynamic?: boolean;
   fieldName?: string;

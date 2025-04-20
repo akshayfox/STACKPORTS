@@ -51,7 +51,7 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
     fontSize: `${element.style.fontSize}px`,
     color: element.style.color,
     borderRadius: element.style.borderRadius ? `${element.style.borderRadius}%` : "0%",
-    // overflow: "hidden",
+    fontFamily:element.style.fontFamily ,
   }), [transformStyle, element.style]);
 
 
@@ -170,6 +170,8 @@ const contentStyle: React.CSSProperties = useMemo(() => ({
                 fontSize: `${element.style.fontSize}px`,
                 color: element.style.color,
                 backgroundColor: element.style.backgroundColor,
+                fontFamily:element.style.fontFamily ,
+
               }}
               className="p-0 border-none bg-transparent resize-none focus:outline-none"
               value={element.content}

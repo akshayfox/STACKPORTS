@@ -3,10 +3,25 @@ import { useEditorStore } from "../store/editorStore";
 import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from "lucide-react";
 import { Switch } from "./ui/switch";
 
+// List of common web-safe fonts
+const FONT_OPTIONS = [
+  { value: "Arial, sans-serif", label: "Arial" },
+  { value: "Helvetica, sans-serif", label: "Helvetica" },
+  { value: "Times New Roman, serif", label: "Times New Roman" },
+  { value: "Courier New, monospace", label: "Courier New" },
+  { value: "Georgia, serif", label: "Georgia" },
+  { value: "Verdana, sans-serif", label: "Verdana" },
+  { value: "Tahoma, sans-serif", label: "Tahoma" },
+  { value: "Trebuchet MS, sans-serif", label: "Trebuchet MS" },
+  { value: "Impact, sans-serif", label: "Impact" },
+  { value: "Comic Sans MS, cursive", label: "Comic Sans" },
+];
+
 const PropertyPanel: React.FC = () => {
   const { selectedElement, updateElement } = useEditorStore();
   const [fieldLabel, setFieldLabel] = useState("");
   const [isDynamic, setIsDynamic] = useState(false);
+  
   if (!selectedElement) {
     return (
       <div className="bg-white p-4 shadow-lg rounded-lg">
@@ -52,8 +67,7 @@ const PropertyPanel: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-4 shadow-lg rounded-lg space-y-4">
-      <h3 className="font-semibold text-lg border-b pb-2">Properties</h3>
+    <div className="bg-white min-h-full p-4 shadow-lg rounded-lg space-y-3">
 
       {selectedElement.type === "text" && (
         <>
@@ -77,8 +91,8 @@ const PropertyPanel: React.FC = () => {
                   type="text"
                   value={selectedElement.fieldName}
                   onChange={handleFieldLabelChange}
-                  placeholder="Enter field name (e.g., student_name)"
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter field name"
+                  className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   This will be used as the data key when generating IDs
@@ -86,46 +100,64 @@ const PropertyPanel: React.FC = () => {
               </div>
             )}
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Font Family
+            </label>
+            <select
+              value={selectedElement.style.fontFamily || "Arial, sans-serif"}
+              onChange={(e) => handleStyleChange("fontFamily", e.target.value)}
+              className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+            >
+              {FONT_OPTIONS.map((font) => (
+                <option key={font.value} value={font.value}>
+                  {font.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Text Align
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <button
                 onClick={() => handleStyleChange("textAlign", "left")}
-                className={`p-2 border rounded-md ${
+                className={`p-1 border rounded ${
                   selectedElement.style.textAlign === "left"
                     ? "bg-blue-500 text-white"
                     : "text-gray-700"
                 }`}>
-                <AlignLeft size={20} />
+                <AlignLeft size={16} />
               </button>
               <button
                 onClick={() => handleStyleChange("textAlign", "center")}
-                className={`p-2 border rounded-md ${
+                className={`p-1 border rounded ${
                   selectedElement.style.textAlign === "center"
                     ? "bg-blue-500 text-white"
                     : "text-gray-700"
                 }`}>
-                <AlignCenter size={20} />
+                <AlignCenter size={16} />
               </button>
               <button
                 onClick={() => handleStyleChange("textAlign", "right")}
-                className={`p-2 border rounded-md ${
+                className={`p-1 border rounded ${
                   selectedElement.style.textAlign === "right"
                     ? "bg-blue-500 text-white"
                     : "text-gray-700"
                 }`}>
-                <AlignRight size={20} />
+                <AlignRight size={16} />
               </button>
               <button
                 onClick={() => handleStyleChange("textAlign", "justify")}
-                className={`p-2 border rounded-md ${
+                className={`p-1 border rounded ${
                   selectedElement.style.textAlign === "justify"
                     ? "bg-blue-500 text-white"
                     : "text-gray-700"
                 }`}>
-                <AlignJustify size={20} />
+                <AlignJustify size={16} />
               </button>
             </div>
           </div>
@@ -137,8 +169,8 @@ const PropertyPanel: React.FC = () => {
             <textarea
               value={selectedElement.content}
               onChange={(e) => handleContentChange(e.target.value)}
-              className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-              rows={3}
+              className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+              rows={2}
             />
           </div>
           <div>
@@ -151,7 +183,7 @@ const PropertyPanel: React.FC = () => {
               onChange={(e) =>
                 handleStyleChange("fontSize", Number(e.target.value))
               }
-              className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
               min="8"
               max="200"
             />
@@ -160,12 +192,17 @@ const PropertyPanel: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Color
             </label>
-            <input
-              type="color"
-              value={selectedElement.style.color}
-              onChange={(e) => handleStyleChange("color", e.target.value)}
-              className="w-full h-10 p-1 border rounded-md"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={selectedElement.style.color}
+                onChange={(e) => handleStyleChange("color", e.target.value)}
+                className="h-8 w-8 p-1 border rounded"
+              />
+              <span className="text-xs text-gray-500">
+                {selectedElement.style.color}
+              </span>
+            </div>
           </div>
         </>
       )}
@@ -204,8 +241,8 @@ const PropertyPanel: React.FC = () => {
                     fieldName: label,
                   });
                 }}
-                placeholder="Enter field name (e.g., student_photo)"
-                className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter field name"
+                className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
               />
               <p className="text-xs text-gray-500 mt-1">
                 This will be replaced with an image URL when generating IDs.
@@ -215,83 +252,93 @@ const PropertyPanel: React.FC = () => {
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Position X
-        </label>
-        <input
-          type="number"
-          value={selectedElement.style.x}
-          onChange={(e) => handleStyleChange("x", Number(e.target.value))}
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-        />
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Position X
+          </label>
+          <input
+            type="number"
+            value={selectedElement.style.x}
+            onChange={(e) => handleStyleChange("x", Number(e.target.value))}
+            className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Position Y
+          </label>
+          <input
+            type="number"
+            value={selectedElement.style.y}
+            onChange={(e) => handleStyleChange("y", Number(e.target.value))}
+            className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Width
+          </label>
+          <input
+            type="number"
+            value={selectedElement.style.width}
+            onChange={(e) => handleStyleChange("width", Number(e.target.value))}
+            className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+            min="10"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Height
+          </label>
+          <input
+            type="number"
+            value={selectedElement.style.height}
+            onChange={(e) => handleStyleChange("height", Number(e.target.value))}
+            className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+            min="10"
+          />
+        </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Position Y
+          Background Color
         </label>
-        <input
-          type="number"
-          value={selectedElement.style.y}
-          onChange={(e) => handleStyleChange("y", Number(e.target.value))}
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Width
-        </label>
-        <input
-          type="number"
-          value={selectedElement.style.width}
-          onChange={(e) => handleStyleChange("width", Number(e.target.value))}
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-          min="10"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Height
-        </label>
-        <input
-          type="number"
-          value={selectedElement.style.height}
-          onChange={(e) => handleStyleChange("height", Number(e.target.value))}
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-          min="10"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Color
-        </label>
-        <input
-          type="color"
-          value={selectedElement.style.color}
-          onChange={(e) => handleStyleChange("backgroundColor", e.target.value)}
-          className="w-full h-10 p-1 border rounded-md"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={selectedElement.style.backgroundColor}
+            onChange={(e) => handleStyleChange("backgroundColor", e.target.value)}
+            className="h-8 w-8 p-1 border rounded"
+          />
+          <span className="text-xs text-gray-500">
+            {selectedElement.style.backgroundColor}
+          </span>
+        </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Rotation
         </label>
-        <input
-          type="range"
-          value={selectedElement.style.rotation}
-          onChange={(e) =>
-            handleStyleChange("rotation", Number(e.target.value))
-          }
-          className="w-full"
-          min="0"
-          max="360"
-        />
-        <div className="text-center text-sm text-gray-600">
-          {selectedElement.style.rotation}°
+        <div className="flex items-center gap-2">
+          <input
+            type="range"
+            value={selectedElement.style.rotation}
+            onChange={(e) =>
+              handleStyleChange("rotation", Number(e.target.value))
+            }
+            className="flex-1"
+            min="0"
+            max="360"
+          />
+          <span className="text-xs w-10 text-center">
+            {selectedElement.style.rotation}°
+          </span>
         </div>
       </div>
 
@@ -305,7 +352,7 @@ const PropertyPanel: React.FC = () => {
           onChange={(e) =>
             handleStyleChange("borderRadius", Number(e.target.value))
           }
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
           min="0"
           max="200"
         />
