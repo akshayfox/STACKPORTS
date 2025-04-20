@@ -13,7 +13,7 @@ import EditorPage from "./pages/editor/editorPage";
 import TemplatePage from "./pages/template/TemplatePage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ClientForm from "./pages/ClientForm";
+import ClientForm from "./pages/DynamicForm";
 
 const queryClient = new QueryClient();
 
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute component={EditorPage} />,
   },
   {
-    path: "/form/publicAccess=true/:id?",
+    path: "/form/:designId",
     element: <ProtectedRoute component={ClientForm} />,
   },
   {

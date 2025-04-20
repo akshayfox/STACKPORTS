@@ -10,7 +10,7 @@ const FormField = memo(({
   handleInputChange, 
   handleImageUpload 
 }: { 
-  element:Element, 
+  element: Element, 
   handleInputChange: (id: string, value: string) => void, 
   handleImageUpload: (id: string, e: ChangeEvent<HTMLInputElement>) => void 
 }) => {
@@ -72,20 +72,31 @@ const DynamicFormModal: React.FC<{
 
   useEffect(() => {
     if (!designId) return;
-
     const loadDesign = async () => {
       try {
         const designData = await fetchDesign(designId);
-        setActiveTemplate({ ...designData });
+        const updatedElements = designData.elements.map((el) => {
+          if (el.dynamic && el.type === "text") {
+            return {
+              ...el,
+              content: "",
+            };
+          }
+          return el;
+        });
+        setActiveTemplate({
+          ...designData,
+          elements: updatedElements,
+        });
       } catch (error) {
         console.error("Error fetching design:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
     loadDesign();
   }, [designId, setActiveTemplate]);
+  
 
   const handleInputChange = (id: string, value: string) => {
     updateElement(id, { content: value });
@@ -125,7 +136,7 @@ const DynamicFormModal: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="flex flex-col sm:flex-row bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="flex flex-col md:flex-row bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
         <div className="w-full md:w-1/2 p-4 overflow-y-auto">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-lg font-bold">

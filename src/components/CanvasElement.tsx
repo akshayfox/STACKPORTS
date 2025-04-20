@@ -131,7 +131,7 @@ const contentStyle: React.CSSProperties = useMemo(() => ({
         break;
     }
     handleResize(updates);
-  }, [handleResize]);
+  }, []);
 
   const handleTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateElement(element.id, { content: e.target.value });

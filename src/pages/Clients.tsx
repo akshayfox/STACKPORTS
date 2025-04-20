@@ -5,22 +5,13 @@ import { Client } from '@/types/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClients, deleteClient } from '@/services/clientService';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash, Plus } from 'lucide-react';
+import { Edit, FileText} from 'lucide-react';
 import ClientModal from '@/components/modal/ClientModal';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import ClientForm from '@/components/ClientForm';
+import DeleteModal from '@/components/modal/DeleteModal';
+import { useNavigate } from 'react-router-dom';
 
 export default function Clients() {
+  const navigate=useNavigate()
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Partial<Client> | null>(null);
   const queryClient = useQueryClient();
@@ -87,41 +78,33 @@ export default function Clients() {
         const client = info.row.original;
         return (
           <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => handleEditClient(client)}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handleEditClient(client)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            title='form'
+            size="sm"
+            onClick={() => navigate(`/form/${client.template._id}`)}
             >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the client.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteMutation.mutate(client._id)}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+            <FileText className="h-4 w-4" />
+          </Button>
+          <DeleteModal
+            title="Are you sure?"
+            description="This action cannot be undone. This will permanently delete the client."
+            onDelete={() => deleteMutation.mutate(client._id)}
+            isDeleting={deleteMutation.isPending}
+          />
+        </div>
         );
       },
     }),
   ];
 
-  // In your Clients.tsx file, update the return statement:
   
   return (
     <div className="p-6">
