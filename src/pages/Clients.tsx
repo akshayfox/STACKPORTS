@@ -3,15 +3,10 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { DataTable } from '@/components/DataTable';
 import { Client } from '@/types/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getClients, createClient, updateClient, deleteClient } from '@/services/clientService';
+import { getClients, deleteClient } from '@/services/clientService';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash, Plus } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import ClientModal from '@/components/modal/ClientModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,22 +31,7 @@ export default function Clients() {
   });
   console.log(clients)
 
-  const createMutation = useMutation({
-    mutationFn: createClient,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      setIsOpen(false);
-    },
-  });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Client> }) => 
-      updateClient(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      setIsOpen(false);
-    },
-  });
 
   const deleteMutation = useMutation({
     mutationFn: deleteClient,
@@ -70,13 +50,7 @@ export default function Clients() {
     setIsOpen(true);
   };
 
-  const handleSubmit = (values: Partial<Client>) => {
-    if (selectedClient?._id) {
-      updateMutation.mutate({ id: selectedClient._id, data: values });
-    } else {
-      createMutation.mutate(values as Omit<Client, '_id'>);
-    }
-  };
+
 
   const columnHelper = createColumnHelper<Client>();
 
@@ -167,20 +141,11 @@ export default function Clients() {
         />
       )}
   
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedClient?._id ? 'Edit Client' : 'Add New Client'}
-            </DialogTitle>
-          </DialogHeader>
-          <ClientForm 
-            initialValues={selectedClient || {}}
-            onSubmit={handleSubmit}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
-          />
-        </DialogContent>
-      </Dialog>
+      <ClientModal 
+        isOpen={isOpen} 
+        setIsOpen={setIsOpen} 
+        selectedClient={selectedClient} 
+      />
     </div>
   );
 }
