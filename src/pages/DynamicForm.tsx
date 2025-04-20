@@ -242,10 +242,10 @@ const ClientForm: React.FC = () => {
             </div>
             
             {/* Right panel - Preview */}
-            <div className="w-full md:w-1/2 bg-gray-50 border-t md:border-t-0 md:border-l border-gray-200">
+            <div className="w-full md:w-1/2 bg-gray-50 md:border-t-0 md:border-l border-gray-200">
               <div className="p-8">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Preview</h2>
-                <div className="bg-white rounded-lg shadow p-2">
+                <div className=" ">
                   <Canvas drag={false} />
                 </div>
               </div>
