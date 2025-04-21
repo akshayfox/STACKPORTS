@@ -19,6 +19,7 @@ import DataEntryModal from "@/components/modal/DataEntryModal";
 import { useEditorStore } from "@/store/editorStore";
 import NoDataFoundPage from "../NoDataFound";
 import DynamicFormModal from "@/components/dynamic-form";
+import { getHeaders } from "@/utils/auth";
 
 interface MenuItem {
   icon: LucideIcon;
@@ -34,7 +35,7 @@ interface ContextMenuProps {
 }
 
 const fetchDesigns = async (): Promise<Template[]> => {
-  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/designs`);
+  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/designs`,getHeaders());
   return response.data.designs;
 };
 

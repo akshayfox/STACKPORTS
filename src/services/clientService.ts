@@ -1,8 +1,24 @@
 import axios from 'axios';
 import { Client } from '@/types/client';
 import { useAuthStore } from '@/store/authStore';
+import { useNavigate } from 'react-router-dom';
+
 
 const API_URL = `${import.meta.env.VITE_BASE_URL}/clients`;
+
+// Add axios response interceptor
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore.getState();
+      authStore.logout();
+      const navigate = useNavigate();
+      navigate('/login');
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Helper to create headers with auth token from the auth store
 const getHeaders = () => {
