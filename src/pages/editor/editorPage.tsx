@@ -11,6 +11,7 @@ import axios from "axios";
 import { Template } from "../../types/editor";
 import ZoomableCanvas from "@/components/ZoomableCanvas ";
 import { captureCanvas } from "@/utils/helpers";
+import { cn } from "@/lib/utils";
 
 const DEFAULT_CANVAS_SIZE = {
   width: 400,
@@ -116,6 +117,7 @@ const EditorPage: React.FC = () => {
   const [isPropertyPanelOpen, setIsPropertyPanelOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(activeTemplate?.name || "");
+  const [Loading, setLoading] = useState(false);
 
   useEffect(() => {
     setTempName(activeTemplate?.name || "");
@@ -217,6 +219,7 @@ const EditorPage: React.FC = () => {
   const handleSave = async () => {
     if (!activeTemplate) return;
     try {
+      setLoading(true);
       const thumbnail = await captureCanvas(canvasRef, activeTemplate);
       const formData = new FormData();
       const base64Data = thumbnail.split(",")[1];
@@ -233,17 +236,15 @@ const EditorPage: React.FC = () => {
         ? await api.updateDesign(activeTemplate._id, formData)
         : await api.uploadThumbnail(formData);
       if (result.success && result.design) {
+        setLoading(false);
         localStorage.setItem("design_id", result.design._id);
         window.history.replaceState(null, "", `/editor/${result.design._id}`);
       }
-      alert(
-        result.success
-          ? "Design saved successfully!"
-          : `Failed to save design: ${result.error}`
-      );
+      
     } catch (error) {
       console.error("Save error:", error);
-      alert("Failed to save the design");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -347,12 +348,24 @@ const EditorPage: React.FC = () => {
           </div>
         </aside>
 
-        <div className="flex-1 bg-gray-100" ref={canvasRef}>
+        <div className="relative flex-1 bg-gray-100" ref={canvasRef}>
           <ZoomableCanvas>
-            <div className="bg-white rounded-lg shadow-xl">
+            <div
+              className={cn(
+                "bg-white rounded-lg shadow-xl transition-all duration-300",
+                Loading && "blur-sm pointer-events-none"
+              )}>
               <Canvas drag={true} />
             </div>
           </ZoomableCanvas>
+
+          {Loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-sm z-10">
+              <span className="text-gray-800 text-lg font-semibold">
+                Saving...
+              </span>
+            </div>
+          )}
         </div>
 
         <aside
