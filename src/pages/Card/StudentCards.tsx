@@ -16,7 +16,6 @@ import { Loader, Image, Filter, AlertCircle } from "lucide-react";
 function StudentCards() {
   const [searchParams, setSearchParams] = useSearchParams();
   const clientId = searchParams.get("clientId");
-  const groupId = searchParams.get("groupId") ?? "";
   const [selectedGroup, setSelectedGroup] = useState<string>(
     searchParams.get("groupId") || "all" // Default to "all" instead of ""
   );
