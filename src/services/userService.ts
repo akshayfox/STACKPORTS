@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Group } from '@/types/group';
 
 
-const API_URL = `${import.meta.env.VITE_BASE_URL}/groups`;
+const API_URL = `${import.meta.env.VITE_BASE_URL}/user`;
 
 axios.interceptors.response.use(
   response => response,
@@ -57,4 +57,9 @@ export const updateGroup = async (id: string, GroupData: Partial<Group>) => {
 export const deleteGroup = async (id: string) => {
   const response = await axios.delete(`${API_URL}/${id}`, getHeaders());
   return response.data;
+};
+
+export const getGroupByClientId = async (clientId: string | null) => {
+  const res = await axios.get(`${API_URL}/client/${clientId}`,getHeaders());
+  return res.data;
 };

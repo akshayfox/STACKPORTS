@@ -61,3 +61,5 @@ export const deleteGroup = async (id: string) => {
   const response = await axios.delete(`${API_URL}/${id}`, getHeaders());
   return response.data;
 };
+
+

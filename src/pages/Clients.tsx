@@ -93,8 +93,8 @@ export default function Clients() {
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/form/${client.template._id}`)}>
-                <FileText className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={() => navigate(`/form/${client.template._id}?clientId=${client._id}`)}>
+              <FileText className="mr-2 h-4 w-4" />
                 View Form
               </DropdownMenuItem>
               <DropdownMenuItem
