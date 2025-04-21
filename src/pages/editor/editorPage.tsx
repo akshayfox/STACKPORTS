@@ -322,7 +322,7 @@ const EditorPage: React.FC = () => {
         </div>
 
         <nav className="bg-gray-50 px-4 py-2 border-b border-gray-200 hidden md:block">
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
             {["File", "Edit", "View", "Save"].map((item) => (
               <button
                 key={item}
@@ -331,7 +331,7 @@ const EditorPage: React.FC = () => {
                 {item}
               </button>
             ))}
-          </div>
+          </div> */}
         </nav>
       </header>
 
