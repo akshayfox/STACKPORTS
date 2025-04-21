@@ -1,11 +1,12 @@
 // ClientForm.tsx
 import React, {
   ChangeEvent,
-  FormEvent,
   useEffect,
   useMemo,
   useState,
   memo,
+  useCallback,
+  useRef,
 } from "react";
 import axios from "axios";
 import { Element, Template } from "@/types/editor";
@@ -15,17 +16,25 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Upload, Loader } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getGroupByClientId } from "@/services/userService";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { debounce } from "lodash";
+import { getHeaders } from "@/utils/auth";
+import { v4 as uuidv4 } from "uuid";
+import { captureCanvas } from "@/utils/helpers";
 
 // Memoized FormField Component
 const FormField = memo(
   ({
     element,
-    handleInputChange,
+    formik,
     handleImageUpload,
+    handleInputChange,
   }: {
     element: Element;
-    handleInputChange: (id: string, value: string) => void;
+    formik: any;
     handleImageUpload: (id: string, e: ChangeEvent<HTMLInputElement>) => void;
+    handleInputChange: (id: string, value: string) => void;
   }) => {
     const [uploading, setUploading] = useState(false);
 
@@ -37,6 +46,12 @@ const FormField = memo(
       await handleImageUpload(id, e);
       setUploading(false);
     };
+
+    // Debounced input change handler
+    const debouncedChangeHandler = useMemo(
+      () => debounce(handleInputChange, 300),
+      [handleInputChange]
+    );
 
     return (
       <div className="mb-4">
@@ -80,15 +95,26 @@ const FormField = memo(
             )}
           </div>
         ) : (
-          <input
-            type="text"
-            id={element.id}
-            value={element.content || ""}
-            onChange={(e) => handleInputChange(element.id, e.target.value)}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
-            placeholder={`Enter ${element.fieldName}`}
-            required={element.metadata?.isRequired}
-          />
+          <>
+            <input
+              type="text"
+              id={element.id}
+              name={element.id}
+              value={formik.values[element.id] || ""}
+              onChange={(e) => {
+                formik.handleChange(e);
+                debouncedChangeHandler(element.id, e.target.value);
+              }}
+              onBlur={formik.handleBlur}
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200"
+              placeholder={`Enter ${element.fieldName}`}
+            />
+            {formik.touched[element.id] && formik.errors[element.id] && (
+              <div className="mt-1 text-sm text-red-600">
+                {formik.errors[element.id]}
+              </div>
+            )}
+          </>
         )}
       </div>
     );
@@ -98,12 +124,14 @@ const FormField = memo(
 const ClientForm: React.FC = () => {
   const location = useLocation();
   const { designId } = useParams<{ designId: string }>();
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const searchParams = new URLSearchParams(location.search);
   const clientId = searchParams.get("clientId");
   const navigate = useNavigate();
 
   const { updateElement, setActiveTemplate, activeTemplate } = useEditorStore();
+  console.log(activeTemplate, "activeTemplate");
   const [isLoading, setIsLoading] = useState(true);
   const [formSubmitting, setFormSubmitting] = useState(false);
 
@@ -131,9 +159,13 @@ const ClientForm: React.FC = () => {
     loadDesign();
   }, [designId, setActiveTemplate]);
 
-  const handleInputChange = (id: string, value: string) => {
-    updateElement(id, { content: value });
-  };
+  // Handler for immediate updates to the preview
+  const handleInputChange = useCallback(
+    (id: string, value: string) => {
+      updateElement(id, { content: value });
+    },
+    [updateElement]
+  );
 
   const handleImageUpload = async (
     id: string,
@@ -150,25 +182,14 @@ const ClientForm: React.FC = () => {
       );
       const uploadedUrl = res.data?.docs?.[0]?.url;
       if (uploadedUrl) {
+        const imageUrl = `${import.meta.env.VITE_IMAGE_URL}${uploadedUrl}`;
         updateElement(id, {
-          content: `${import.meta.env.VITE_IMAGE_URL}${uploadedUrl}`,
+          content: imageUrl,
         });
+        formik.setFieldValue(id, imageUrl);
       }
     } catch (err) {
       console.error("Upload error:", err);
-    }
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setFormSubmitting(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800)); // Simulating API call
-      navigate(-1); // Navigate back after submit
-    } catch (error) {
-      console.error("Form submission error:", error);
-    } finally {
-      setFormSubmitting(false);
     }
   };
 
@@ -177,12 +198,86 @@ const ClientForm: React.FC = () => {
     [activeTemplate]
   );
 
-  const { data: groupsByClient = [], isLoading: groupsByClientLoading } = useQuery({
-    queryKey: ["groupsByClient", clientId],
-    queryFn: () => getGroupByClientId(clientId),
-    enabled: !!clientId,
+  // Create initial values and validation schema
+  const { initialValues, validationSchema } = useMemo(() => {
+    const values: Record<string, string> = {};
+    const schema: Record<string, any> = {};
+
+    dynamicElements.forEach((element) => {
+      values[element.id] = element.content || "";
+      if (element.metadata?.isRequired && element.type !== "image") {
+        schema[element.id] = Yup.string().required(
+          `${element.fieldName} is required`
+        );
+      }
+    });
+
+    return {
+      initialValues: values,
+      validationSchema: Yup.object().shape(schema),
+    };
+  }, [dynamicElements]);
+
+  const formik = useFormik({
+    initialValues,
+    validationSchema,
+    onSubmit: async (values) => {
+      if (!activeTemplate) return;
+
+      setFormSubmitting(true);
+      try {
+        Object.entries(values).forEach(([id, value]) => {
+          updateElement(id, { content: value });
+        });
+        const thumbnail = await captureCanvas(canvasRef, activeTemplate);
+        const base64Data = thumbnail.split(",")[1];
+        const byteArray = new Uint8Array(
+          atob(base64Data)
+            .split("")
+            .map((char) => char.charCodeAt(0))
+        );
+        const blob = new Blob([byteArray], { type: "image/png" });
+        const studentCardData = {
+          id: uuidv4(),
+          name: activeTemplate?.name || "Untitled Card",
+          canvasSize: activeTemplate?.canvasSize || { width: 800, height: 600 },
+          elements: activeTemplate?.elements || [],
+          client: clientId,
+          group: values.group,
+        };
+        const formData = new FormData();
+        formData.append("thumbnail", blob, "thumbnail.png"); // <-- Important!
+        formData.append("data", JSON.stringify(studentCardData));
+        const response = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/student`,
+          formData,
+          {
+            headers: {
+              ...getHeaders().headers, // Extract inner headers
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        if (response.status === 200) {
+          navigate(-1);
+        } else {
+          throw new Error("Failed to save form data");
+        }
+      } catch (error) {
+        console.error("Form submission error:", error);
+      } finally {
+        setFormSubmitting(false);
+      }
+    },
   });
-  
+
+  const { data: groupsByClient = [], isLoading: groupsByClientLoading } =
+    useQuery({
+      queryKey: ["groupsByClient", clientId],
+      queryFn: () => getGroupByClientId(clientId),
+      enabled: !!clientId,
+    });
+
   const groupOptions = groupsByClient.map((group: any) => ({
     label: group.fullname,
     value: group._id,
@@ -204,8 +299,7 @@ const ClientForm: React.FC = () => {
           className="h-8 w-8 text-gray-400"
           fill="none"
           viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+          stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -230,15 +324,13 @@ const ClientForm: React.FC = () => {
         type="button"
         onClick={() => navigate(-1)}
         className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-        disabled={submitting}
-      >
+        disabled={submitting}>
         Cancel
       </button>
       <button
         type="submit"
         className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-        disabled={submitting}
-      >
+        disabled={submitting || !formik.isValid}>
         {submitting ? (
           <>
             <Loader className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
@@ -261,8 +353,7 @@ const ClientForm: React.FC = () => {
               <div className="mb-6">
                 <button
                   onClick={() => navigate(-1)}
-                  className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors duration-200"
-                >
+                  className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors duration-200">
                   <ArrowLeft className="w-4 h-4 mr-1" />
                   <span>Back</span>
                 </button>
@@ -280,7 +371,7 @@ const ClientForm: React.FC = () => {
               ) : dynamicElements.length === 0 ? (
                 <EmptyState />
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={formik.handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-2">
                     {groupsByClientLoading ? (
                       <div className="sm:col-span-2">
@@ -290,16 +381,14 @@ const ClientForm: React.FC = () => {
                       <div className="sm:col-span-2 mb-2">
                         <label
                           htmlFor="group"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
+                          className="block text-sm font-medium text-gray-700 mb-1">
                           Select Group
                         </label>
                         <select
                           id="group"
                           name="group"
                           className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200"
-                          defaultValue=""
-                        >
+                          defaultValue="">
                           <option value="" disabled>
                             Select a group
                           </option>
@@ -316,12 +405,14 @@ const ClientForm: React.FC = () => {
                     {dynamicElements.map((element) => (
                       <div
                         key={element.id}
-                        className={element.type === "image" ? "sm:col-span-2" : ""}
-                      >
+                        className={
+                          element.type === "image" ? "sm:col-span-2" : ""
+                        }>
                         <FormField
                           element={element}
-                          handleInputChange={handleInputChange}
+                          formik={formik}
                           handleImageUpload={handleImageUpload}
+                          handleInputChange={handleInputChange}
                         />
                       </div>
                     ))}
@@ -337,9 +428,14 @@ const ClientForm: React.FC = () => {
             {/* Right panel - Preview */}
             <div className="w-full md:w-1/2 bg-gray-50 border-t md:border-t-0 md:border-l border-gray-200">
               <div className="p-6 lg:p-8">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Preview</h2>
-                <div className="bg-white rounded-lg border border-gray-200 p-2">
-                  <Canvas drag={false} />
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Live Preview
+                </h2>
+
+                <div ref={canvasRef}>
+                  <div id="canvas-content" className="">
+                    <Canvas drag={false} />
+                  </div>
                 </div>
               </div>
             </div>

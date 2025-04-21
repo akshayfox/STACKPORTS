@@ -87,7 +87,7 @@ const Canvas: React.FC<CanvasProps> = ({ drag = true, cardRef }) => {
   return (
     <div
       ref={cardRef}
-      className="relative bg-white shadow-lg rounded-lg overflow-hidden mx-auto"
+      className="relative bg-white shadow-lg rounded-lg overflow-hidden mx-auto "
       onClick={handleCanvasClick}
       onKeyDown={handleKeyDown}
       style={canvasStyle}

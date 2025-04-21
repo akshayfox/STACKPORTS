@@ -19,7 +19,7 @@ axios.interceptors.response.use(
   }
 );
 
-const getHeaders = () => {
+export const getHeaders = () => {
   const token = useAuthStore.getState().token;
   
   if (!token) {

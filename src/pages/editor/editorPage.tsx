@@ -123,6 +123,7 @@ const EditorPage: React.FC = () => {
     setTempName(activeTemplate?.name || "");
   }, [activeTemplate?.name]);
 
+
   const handleNameSave = async () => {
     if (!activeTemplate?._id) {
       setIsEditingName(false);
@@ -346,9 +347,10 @@ const EditorPage: React.FC = () => {
           </div>
         </aside>
 
-        <div className="relative flex-1 bg-gray-100" ref={canvasRef}>
+        <div  className="relative flex-1 bg-gray-100" ref={canvasRef}>
           <ZoomableCanvas>
             <div
+            id="canvas-content"
               className={cn(
                 "bg-white rounded-lg shadow-xl transition-all duration-300",
                 Loading && "blur-sm pointer-events-none"

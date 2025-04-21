@@ -8,13 +8,11 @@ export const captureCanvas = async (
   if (!canvasRef.current) {
     throw new Error("Canvas reference is null");
   }
-  const canvasContent = canvasRef.current.querySelector<HTMLElement>(
-    ".bg-white.rounded-lg.shadow-xl"
-  );
+  const canvasContent = canvasRef.current.querySelector<HTMLElement>("#canvas-content");
+
   if (!canvasContent) {
     throw new Error("Canvas content not found");
   }
-
   if (!activeTemplate?.canvasSize) {
     throw new Error("Canvas size is undefined");
   }
