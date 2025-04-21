@@ -4,7 +4,6 @@ import axios from "axios";
 import Canvas from "./Canvas";
 import { useEditorStore } from "@/store/editorStore";
 
-// Memoized form field component for better performance
 const FormField = memo(({ 
   element, 
   handleInputChange, 
@@ -108,14 +107,11 @@ const DynamicFormModal: React.FC<{
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       const formData = new FormData();
       formData.append("images", file);
-
       const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/image/upload`, formData);
       const uploadedUrl = res.data?.docs?.[0]?.url;
-
       if (uploadedUrl) {
         updateElement(id, { content:`${import.meta.env.VITE_IMAGE_URL}${uploadedUrl}`  });
       }

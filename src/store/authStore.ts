@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>()(
           });
           // Optionally set token in axios headers for subsequent requests
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          navigate('/')
+          navigate('/home')
         } catch (error: any) {
           const errorMessage =
             error.response?.data?.message || 'Login failed. Please try again.';

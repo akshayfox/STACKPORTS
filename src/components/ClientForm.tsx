@@ -22,8 +22,15 @@ const ClientSchema = Yup.object().shape({
   contact: Yup.string()
     .matches(/^\d{10}$/, "Please enter a valid 10-digit phone number")
     .required("Contact number is required"),
-  grouptitle: Yup.string().required("Group title is required"),
+  grouptitle: Yup.string(),
   template: Yup.string().required("Template is required"),
+  username: Yup.string()
+    .required("Username is required")
+    .min(3, "Username must be at least 3 characters"),
+  password: Yup.string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters"),
+ 
 });
 
 const ClientForm: React.FC<ClientFormProps> = ({
@@ -31,7 +38,6 @@ const ClientForm: React.FC<ClientFormProps> = ({
   onSubmit,
   isSubmitting,
 }) => {
-  console.log(initialValues, "initialValues");
   const { data: templates = [] } = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates,
@@ -42,8 +48,6 @@ const ClientForm: React.FC<ClientFormProps> = ({
       })),
   });
 
-  console.log(templates, "templates");
-
   return (
     <Formik
       initialValues={{
@@ -53,6 +57,10 @@ const ClientForm: React.FC<ClientFormProps> = ({
         grouptitle: initialValues?.grouptitle || "",
         template: initialValues?.template?._id || "",
         isActive: initialValues?.isActive ?? true,
+        role: 'client',
+        username: initialValues?.username || "",
+        password: initialValues?.password,
+
       }}
       validationSchema={ClientSchema}
       onSubmit={onSubmit}>
@@ -160,6 +168,21 @@ const ClientForm: React.FC<ClientFormProps> = ({
               />
             </div>
 
+            <div>
+              <Label htmlFor="username">Username</Label>
+              <Field
+                as={Input}
+                name="username"
+                className={
+                  errors.username && touched.username ? "border-red-500" : ""
+                }
+              />
+              <ErrorMessage
+                name="username"
+                component="div"
+                className="text-red-500 text-sm mt-1"
+              />
+            </div>
             <div className="flex items-center space-x-2">
               <Switch
                 id="isActive"

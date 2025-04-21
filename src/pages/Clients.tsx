@@ -124,7 +124,7 @@ export default function Clients() {
         </div>
       ) : (
         <DataTable 
-          data={clients?.clients || []} 
+          data={clients || []} 
           columns={columns} 
           searchPlaceholder="Search clients..." 
           onAddClick={handleAddClient}

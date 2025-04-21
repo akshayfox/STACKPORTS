@@ -3,10 +3,11 @@ export interface Client {
   fullname: string;
   place: string;
   contact: string;
+  password: string;
   grouptitle: string;
   template: any;
   isActive: boolean;
-  user: string;
+  username:string;
   createdAt?: string;
   updatedAt?: string;
 }

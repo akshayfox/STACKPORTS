@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { Client } from '@/types/client';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { Group } from '@/types/group';
 
 
-const API_URL = `${import.meta.env.VITE_BASE_URL}/user`;
+const API_URL = `${import.meta.env.VITE_BASE_URL}/groups`;
 
 axios.interceptors.response.use(
   response => response,
@@ -34,31 +34,27 @@ const getHeaders = () => {
   };
 };
 
-export const getClients = async () => {
-  const response = await axios.get(API_URL, {
-    ...getHeaders(),
-    params: { role: 'client' },
-  });
-  return response.data?.data;
+export const getGroups = async () => {
+  const response = await axios.get(API_URL, getHeaders());
+  return response.data;
 };
 
-
-export const getClientById = async (id: string) => {
+export const getGroupById = async (id: string) => {
   const response = await axios.get(`${API_URL}/${id}`, getHeaders());
   return response.data;
 };
 
-export const createClient = async (clientData: Omit<Client, '_id'>) => {
-  const response = await axios.post(API_URL, clientData, getHeaders());
+export const createGroup = async (GroupData: Omit<Group, '_id'>) => {
+  const response = await axios.post(API_URL, GroupData, getHeaders());
   return response.data;
 };
 
-export const updateClient = async (id: string, clientData: Partial<Client>) => {
-  const response = await axios.put(`${API_URL}/${id}`, clientData, getHeaders());
+export const updateGroup = async (id: string, GroupData: Partial<Group>) => {
+  const response = await axios.put(`${API_URL}/${id}`, GroupData, getHeaders());
   return response.data;
 };
 
-export const deleteClient = async (id: string) => {
+export const deleteGroup = async (id: string) => {
   const response = await axios.delete(`${API_URL}/${id}`, getHeaders());
   return response.data;
 };

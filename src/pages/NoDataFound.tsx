@@ -1,17 +1,10 @@
-import { FolderOpen, RefreshCw, Search } from "lucide-react";
-import { useState } from "react";
+import { FolderOpen, Search } from "lucide-react";
 
 export default function NoDataFoundPage() {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    window.location.reload();
 
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1500);
-  };
+
+
+  
   
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
