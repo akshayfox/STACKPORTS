@@ -61,5 +61,6 @@ export const deleteGroup = async (id: string) => {
 
 export const getGroupByClientId = async (clientId: string | null) => {
   const res = await axios.get(`${API_URL}/client/${clientId}`,getHeaders());
-  return res.data;
+  console.log(res,'res')
+  return res.data?.data;
 };
