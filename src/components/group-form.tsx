@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getClients } from "@/services/clientService";
 import { Client } from "@/types/client";
 import { Group } from "@/types/group";
+import { getGroups } from "@/services/groupService";
 
 interface GroupFormProps {
   initialValues: Partial<Group>;
@@ -16,9 +17,9 @@ interface GroupFormProps {
 }
 
 const GroupSchema = Yup.object().shape({
-  name: Yup.string().required("Group name is required"),
+  fullname: Yup.string().required("Group name is required"),
   subGroupTitle: Yup.string(),
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  username: Yup.string().email("Invalid email").required("username is required"),
   password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
   client: Yup.string().required("Client is required"),
 });
@@ -31,30 +32,36 @@ const GroupForm: React.FC<GroupFormProps> = ({
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
     queryFn: getClients,
-    select: (data: Client[]) =>
+    select: (data: Group[]) =>
       data.map((client) => ({ label: client.fullname, value: client._id })),
   });
 
   return (
     <Formik
       initialValues={{
-        name: initialValues?.name || "",
+        fullname: initialValues?.fullname || "",
         subGroupTitle: initialValues?.subGroupTitle || "",
-        email: initialValues?.email || "",
+        username: initialValues?.username || "",
         password: initialValues?.password || "",
-        client: initialValues?.client?._id || "",
+        client: initialValues?.client || "",
+        role:"group"
       }}
       validationSchema={GroupSchema}
       onSubmit={onSubmit}>
       {({ errors, touched, values, setFieldValue }) => (
-    <Form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <>
+        {console.log(errors,'errors')}
+
+
+<Form className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
       <Label htmlFor="name">Group Name</Label>
       <Field
         as={Input}
         id="name"
-        name="name"
-        className={errors.name && touched.name ? "border-red-500" : ""}
+        name="fullname"
+        className={errors.fullname && touched.fullname ? "border-red-500" : ""}
       />
       <ErrorMessage
         name="name"
@@ -93,11 +100,11 @@ const GroupForm: React.FC<GroupFormProps> = ({
       <Label htmlFor="email">Username</Label>
       <Field
         as={Input}
-        name="email"
-        className={errors.email && touched.email ? "border-red-500" : ""}
+        name="username"
+        className={errors.username && touched.username ? "border-red-500" : ""}
       />
       <ErrorMessage
-        name="email"
+        name="username"
         component="div"
         className="text-red-500 text-sm mt-1"
       />
@@ -146,6 +153,8 @@ const GroupForm: React.FC<GroupFormProps> = ({
       </Button>
     </div>
   </Form>
+        </>
+
   
       )}
     </Formik>

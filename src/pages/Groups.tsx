@@ -21,7 +21,7 @@ export default function Groups() {
   const [selectedClient, setSelectedClient] = useState<Partial<Group> | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: clients = [], isLoading } = useQuery({
+  const { data: groups = [], isLoading } = useQuery({
     queryKey: ['groups'],
     queryFn: getGroups,
   });
@@ -51,28 +51,6 @@ export default function Groups() {
     columnHelper.accessor('fullname', {
       header: 'Name',
       cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('place', {
-      header: 'Place',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('contact', {
-      header: 'Contact',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('grouptitle', {
-      header: 'Group',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('isActive', {
-      header: 'Status',
-      cell: info => (
-        <span className={`px-2 py-1 rounded-full text-xs ${
-          info.getValue() ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {info.getValue() ? 'Active' : 'Inactive'}
-        </span>
-      ),
     }),
     columnHelper.accessor('_id', {
       header: 'Actions',
@@ -107,6 +85,8 @@ export default function Groups() {
     }),
   ];
 
+
+  
   
   return (
     <div className="p-6">
@@ -118,7 +98,7 @@ export default function Groups() {
         </div>
       ) : (
         <DataTable 
-          data={clients?.clients || []} 
+          data={groups|| []} 
           columns={columns} 
           searchPlaceholder="Search groups..." 
           onAddClick={handleAddGroup}

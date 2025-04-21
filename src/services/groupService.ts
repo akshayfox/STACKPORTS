@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Group } from '@/types/group';
 
 
-const API_URL = `${import.meta.env.VITE_BASE_URL}/groups`;
+const API_URL = `${import.meta.env.VITE_BASE_URL}/user`;
 
 axios.interceptors.response.use(
   response => response,
@@ -35,8 +35,11 @@ const getHeaders = () => {
 };
 
 export const getGroups = async () => {
-  const response = await axios.get(API_URL, getHeaders());
-  return response.data;
+  const response = await axios.get(API_URL, {
+    ...getHeaders(),
+    params: { role: 'group' },
+  });    return response.data?.data;
+
 };
 
 export const getGroupById = async (id: string) => {

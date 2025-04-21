@@ -3,8 +3,8 @@
 export interface Group {
   _id?:string;
   client: any;
-  name: string;
-  email: string;
+  fullname: string;
+  username: string;
   password: string;
   subGroupTitle?: string;
   isActive?: boolean;
