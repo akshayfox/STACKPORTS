@@ -14,6 +14,7 @@ import TemplatePage from "./pages/template/TemplatePage";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientForm from "./pages/DynamicForm";
+import StudentCards from "./pages/Card/StudentCards";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: "/templates",
         element: <ProtectedRoute component={TemplatePage} />,
+      },
+      {
+        path: "/cards",
+        element: <ProtectedRoute component={StudentCards} />,
       },
     ],
   },

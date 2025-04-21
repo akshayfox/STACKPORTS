@@ -94,21 +94,26 @@ export default function Clients() {
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/form/${client.template._id}?clientId=${client._id}`)}>
-              <FileText className="mr-2 h-4 w-4" />
+                <FileText className="mr-2 h-4 w-4" />
                 View Form
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(`/cards?clientId=${client._id}`)}>
+              <FileText className="mr-2 h-4 w-4" />
+                View Cards
+              </DropdownMenuItem>
+        
               <DropdownMenuItem
                 onClick={() => deleteMutation.mutate(client._id)}
                 disabled={deleteMutation.isPending}
                 className="text-red-600 focus:text-red-600"
               >
                 <DeleteIcon className="mr-2 h-4 w-4" />
-
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
+        
       },
     }),
   ];

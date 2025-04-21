@@ -35,7 +35,10 @@ interface ContextMenuProps {
 }
 
 const fetchDesigns = async (): Promise<Template[]> => {
-  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/designs`,getHeaders());
+  const response = await axios.get(
+    `${import.meta.env.VITE_BASE_URL}/designs`,
+    getHeaders()
+  );
   return response.data.designs;
 };
 
@@ -171,7 +174,7 @@ const TemplatePage: React.FC = () => {
       case "share":
         break;
       case "create":
-        setIsModalOpen(true)
+        setIsModalOpen(true);
         break;
       case "delete":
         setShowDeleteDialog(true);
@@ -189,43 +192,46 @@ const TemplatePage: React.FC = () => {
     }
     setShowDeleteDialog(false);
   };
-  if (isLoading) return (
-    <div className="flex justify-center items-center ">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-  </div>
-  )
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center ">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
 
-
-
-  
   if (isError) return <div>Error loading designs. Please try again later.</div>;
   if (!templates) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7">
+      <div className="mb-6">
+    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Templates Gallery</h1>
+    <p className="text-gray-600 mt-2">Browse and select from our collection of templates</p>
+  </div>
+
+        <div className="flex flex-wrap gap-4 md:gap-5 lg:gap-7">
           {templates.length > 0 ? (
             templates.map((template: Template) => (
               <Card
                 key={template?._id}
-                className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-44 h-full"
+                className="group relative bg-white border hover:shadow-lg transition-shadow duration-300 w-full max-w-[120px] sm:max-w-[160px] md:max-w-[180px] lg:max-w-[200px] flex-shrink-0"
                 onContextMenu={(e) => handleRightClick(e, template)}>
                 {template.thumbnail && (
-                  <div className="overflow-hidden rounded-md">
+                  <div className="overflow-hidden rounded-md aspect-ratio-[1/1]">
                     <img
                       src={`${import.meta.env.VITE_IMAGE_URL}/${
                         template.thumbnail
                       }`}
                       alt={`${template.name} Thumbnail`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto object-cover"
                     />
                   </div>
                 )}
               </Card>
             ))
           ) : (
-            <div className="col-span-full text-center text-gray-500 text-lg">
+            <div className="w-full text-center text-gray-500 text-lg">
               <NoDataFoundPage />
             </div>
           )}
@@ -267,10 +273,15 @@ const TemplatePage: React.FC = () => {
       />
 
       {isModalOpen && (
-        <DynamicFormModal designId={activeTemplate?._id} onClose={() => setIsModalOpen(false)} />
+        <DynamicFormModal
+          designId={activeTemplate?._id}
+          onClose={() => setIsModalOpen(false)}
+        />
       )}
 
-      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+      <AlertDialog
+        open={showDuplicateDialog}
+        onOpenChange={setShowDuplicateDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Duplicate Template</AlertDialogTitle>
@@ -290,7 +301,10 @@ const TemplatePage: React.FC = () => {
               onClick={async () => {
                 if (contextMenu.template?._id) {
                   try {
-                    await duplicateTemplate(contextMenu.template._id, newTemplateName);
+                    await duplicateTemplate(
+                      contextMenu.template._id,
+                      newTemplateName
+                    );
                     queryClient.invalidateQueries({ queryKey: ["designs"] });
                     setShowDuplicateDialog(false);
                   } catch (error) {
@@ -298,8 +312,7 @@ const TemplatePage: React.FC = () => {
                   }
                 }
               }}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
+              className="bg-blue-500 hover:bg-blue-600">
               Duplicate
             </AlertDialogAction>
           </AlertDialogFooter>
