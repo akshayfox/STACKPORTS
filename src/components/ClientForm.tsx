@@ -66,6 +66,7 @@ const ClientForm: React.FC<ClientFormProps> = ({
       onSubmit={onSubmit}>
       {({ errors, touched, values, setFieldValue }) => (
         <>
+        {console.log(errors,'errors')}
           <Form className="space-y-4">
             <div>
               <Label htmlFor="fullname">Full Name</Label>
@@ -179,6 +180,21 @@ const ClientForm: React.FC<ClientFormProps> = ({
               />
               <ErrorMessage
                 name="username"
+                component="div"
+                className="text-red-500 text-sm mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Field
+                as={Input}
+                name="password"
+                className={
+                  errors.password && touched.password ? "border-red-500" : ""
+                }
+              />
+              <ErrorMessage
+                name="password"
                 component="div"
                 className="text-red-500 text-sm mt-1"
               />

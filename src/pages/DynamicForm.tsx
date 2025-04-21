@@ -197,12 +197,13 @@ const ClientForm: React.FC = () => {
     () => activeTemplate?.elements.filter((el) => el.dynamic) || [],
     [activeTemplate]
   );
+  console.log(dynamicElements,'dynamicElements')
+
 
   // Create initial values and validation schema
   const { initialValues, validationSchema } = useMemo(() => {
-    const values: Record<string, string> = {};
+    const values: Record<string, string> = { group: "" }; // Initialize group field
     const schema: Record<string, any> = {};
-
     dynamicElements.forEach((element) => {
       values[element.id] = element.content || "";
       if (element.metadata?.isRequired && element.type !== "image") {
@@ -211,7 +212,10 @@ const ClientForm: React.FC = () => {
         );
       }
     });
-
+  
+    // Add validation for group if needed
+    schema.group = Yup.string().required("Group selection is required");
+  
     return {
       initialValues: values,
       validationSchema: Yup.object().shape(schema),
@@ -221,13 +225,15 @@ const ClientForm: React.FC = () => {
   const formik = useFormik({
     initialValues,
     validationSchema,
+    
     onSubmit: async (values) => {
       if (!activeTemplate) return;
-
       setFormSubmitting(true);
       try {
-        Object.entries(values).forEach(([id, value]) => {
-          updateElement(id, { content: value });
+        dynamicElements.forEach((element) => {
+          if (values[element.id] !== undefined) {
+            updateElement(element.id, { content: values[element.id] });
+          }
         });
         const thumbnail = await captureCanvas(canvasRef, activeTemplate);
         const base64Data = thumbnail.split(",")[1];
@@ -243,7 +249,7 @@ const ClientForm: React.FC = () => {
           canvasSize: activeTemplate?.canvasSize || { width: 800, height: 600 },
           elements: activeTemplate?.elements || [],
           client: clientId,
-          group: values.group,
+          group: values.group, // Now correctly passed
         };
         const formData = new FormData();
         formData.append("thumbnail", blob, "thumbnail.png"); // <-- Important!
@@ -270,6 +276,7 @@ const ClientForm: React.FC = () => {
       }
     },
   });
+  console.log(formik.values,'VALUESS')
 
   const { data: groupsByClient = [], isLoading: groupsByClientLoading } =
     useQuery({
@@ -385,23 +392,29 @@ const ClientForm: React.FC = () => {
                           Select Group
                         </label>
                         <select
-                          id="group"
-                          name="group"
-                          className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200"
-                          defaultValue="">
-                          <option value="" disabled>
-                            Select a group
-                          </option>
-                          {groupOptions.map((group: any) => (
-                            <option key={group.value} value={group.value}>
-                              {group.label}
-                            </option>
-                          ))}
-                        </select>
+  id="group"
+  name="group"
+  value={formik.values.group}
+  onChange={formik.handleChange}
+  onBlur={formik.handleBlur}
+  className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200"
+>
+  <option value="" disabled>
+    Select a group
+  </option>
+  {groupOptions.map((group: any) => (
+    <option key={group.value} value={group.value}>
+      {group.label}
+    </option>
+  ))}
+</select>
+{formik.touched.group && formik.errors.group && (
+  <div className="mt-1 text-sm text-red-600">
+    {formik.errors.group}
+  </div>
+)}
                       </div>
                     ) : null}
-
-                    {/* Dynamic elements */}
                     {dynamicElements.map((element) => (
                       <div
                         key={element.id}
