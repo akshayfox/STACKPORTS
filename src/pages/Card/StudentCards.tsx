@@ -9,11 +9,10 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { getHeaders } from "@/utils/auth";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { getGroups } from "@/services/groupService";
-import { Loader, Image, Filter, AlertCircle } from "lucide-react";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
+import { Image, Filter, AlertCircle } from "lucide-react";
+import { Group } from "@/types/group";
 import { renderCardToPDF } from "@/utils/cardPdfRenderer";
 
 function StudentCards() {
@@ -29,7 +28,8 @@ function StudentCards() {
       `${import.meta.env.VITE_BASE_URL}/student/client/${clientId}`,
       {
         ...getHeaders(),
-        params: selectedGroup !== "all" ? { groupId: selectedGroup } : {},      }
+        params: selectedGroup !== "all" ? { groupId: selectedGroup } : {},
+      }
     );
     return response.data.data ?? [];
   };
@@ -49,7 +49,7 @@ function StudentCards() {
     queryKey: ["groups", clientId],
     queryFn: getGroups,
     enabled: !!clientId,
-    select: (groups: any[]) =>
+    select: (groups: Group[]) =>
       groups.map((group) => ({
         label: group.fullname,
         value: group._id,
@@ -57,7 +57,7 @@ function StudentCards() {
   });
 
   const handleGroupChange = (value: string) => {
-    console.log(value)
+    console.log(value);
     setSelectedGroup(value);
     setSearchParams((prev) => {
       const updated = new URLSearchParams(prev);
@@ -75,14 +75,14 @@ function StudentCards() {
     if (selectedCards.length === cards.length) {
       setSelectedCards([]);
     } else {
-      setSelectedCards(cards.map(card => card._id));
+      setSelectedCards(cards.map((card) => card._id));
     }
   };
 
   const handleSelectCard = (cardId: string) => {
-    setSelectedCards(prev =>
+    setSelectedCards((prev) =>
       prev.includes(cardId)
-        ? prev.filter(id => id !== cardId)
+        ? prev.filter((id) => id !== cardId)
         : [...prev, cardId]
     );
   };
@@ -113,7 +113,8 @@ function StudentCards() {
     if (!selectedCards.length) return;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    let html = '<html><head><title>Print Cards</title><style>body{margin:0;padding:0;} .card{display:flex;justify-content:center;align-items:center;height:100vh;break-after:page;page-break-after:always;} @media print { .card { page-break-after: always; break-after: page; } }</style></head><body>';
+    let html =
+      "<html><head><title>Print Cards</title><style>body{margin:0;padding:0;} .card{display:flex;justify-content:center;align-items:center;height:100vh;break-after:page;page-break-after:always;} @media print { .card { page-break-after: always; break-after: page; } }</style></head><body>";
     for (let i = 0; i < selectedCards.length; i++) {
       const cardId = selectedCards[i];
       const cardEl = cardRefs.current[cardId];
@@ -125,7 +126,7 @@ function StudentCards() {
         html += wrapper.outerHTML;
       }
     }
-    html += '</body></html>';
+    html += "</body></html>";
     printWindow.document.write(html);
     printWindow.document.close();
     printWindow.focus();
@@ -144,21 +145,21 @@ function StudentCards() {
 
         {!isGroupsLoading && groups.length > 0 && (
           <Select value={selectedGroup} onValueChange={handleGroupChange}>
-          <SelectTrigger className="w-full md:w-64">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <SelectValue placeholder="All Groups" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Groups</SelectItem>
-            {groups.map((group: any) => (
-              <SelectItem key={group.value} value={group.value}>
-                {group.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            <SelectTrigger className="w-full md:w-64">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <SelectValue placeholder="All Groups" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Groups</SelectItem>
+              {groups.map((group: any) => (
+                <SelectItem key={group.value} value={group.value}>
+                  {group.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 
@@ -210,13 +211,21 @@ function StudentCards() {
       {!isCardsLoading && !isError && cards && cards.length > 0 && (
         <>
           <div className="flex items-center mb-4 gap-2">
-            <button onClick={handleSelectAll} className="px-3 py-1 bg-gray-200 rounded text-sm font-medium">
-              {selectedCards.length === cards.length ? "Unselect All" : "Select All"}
+            <button
+              onClick={handleSelectAll}
+              className="px-2 py-1 bg-gray-200 rounded text-sm font-medium">
+              {selectedCards.length === cards.length
+                ? "Unselect All"
+                : "Select All"}
             </button>
-            <button onClick={exportBulkPDF} className="px-3 py-1 bg-blue-600 text-white rounded text-sm font-medium">
+            <button
+              onClick={exportBulkPDF}
+              className="px-3 py-1 bg-blue-600 text-white rounded text-sm font-medium">
               Download PDF (Bulk)
             </button>
-            <button onClick={printBulk} className="px-3 py-1 bg-green-600 text-white rounded text-sm font-medium">
+            <button
+              onClick={printBulk}
+              className="px-3 py-1 bg-green-600 text-white rounded text-sm font-medium">
               Print Selected
             </button>
           </div>
@@ -224,13 +233,18 @@ function StudentCards() {
             {cards.map((card) => (
               <div
                 key={card._id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 relative">
-                <div className="flex items-center justify-center" ref={el => cardRefs.current[card._id] = el}>
+                onClick={() => handleSelectCard(card._id)}
+                className="bg-white rounded-lg  overflow-hidden hover:shadow-lg transition-shadow duration-200 relative cursor-pointer">
+                <div
+                  className="flex items-center justify-center"
+                  ref={(el) => (cardRefs.current[card._id] = el)}>
                   {card.thumbnail ? (
                     <img
-                      src={`${import.meta.env.VITE_IMAGE_URL}/${card.thumbnail}`}
+                      src={`${import.meta.env.VITE_IMAGE_URL}/${
+                        card.thumbnail
+                      }`}
                       alt={card.name}
-                      className="w-full h-full object-contain p-2"
+                      className="w-full h-full object-contain "
                       loading="lazy"
                     />
                   ) : (
@@ -243,12 +257,9 @@ function StudentCards() {
                   type="checkbox"
                   checked={selectedCards.includes(card._id)}
                   onChange={() => handleSelectCard(card._id)}
-                  className="absolute top-2 left-2 w-4 h-4"
+                  className="absolute top-2 left-2 w-4 h-4 pointer-events-none"
+                  readOnly
                 />
-                <div className="flex gap-2 justify-center mt-2 mb-2">
-                  <button onClick={() => exportCardToPDF(card._id)} className="px-2 py-1 bg-blue-500 text-white rounded text-xs">Download PDF</button>
-                  <button onClick={() => printCard(card._id)} className="px-2 py-1 bg-green-500 text-white rounded text-xs">Print</button>
-                </div>
               </div>
             ))}
           </div>
