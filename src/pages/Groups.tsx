@@ -52,6 +52,10 @@ export default function Groups() {
       header: 'Name',
       cell: info => info.getValue(),
     }),
+    columnHelper.accessor('username', {
+      header: 'Username',
+      cell: info => info.getValue(),
+    }),
     columnHelper.accessor('_id', {
       header: 'Actions',
       cell: info => {

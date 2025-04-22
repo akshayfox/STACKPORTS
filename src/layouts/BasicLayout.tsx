@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { Menu, Plus } from "lucide-react";
+import { LogOut, Menu, Plus } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { useAuthStore } from "@/store/authStore";
 import { NewDesignDialog } from "@/components/ui/NewDesignDialog";
@@ -91,55 +91,60 @@ function BasicLayout() {
         onClose={() => setSidebarOpen(false)}
         onCreateDesign={handleCreate}
       />
-      <div className="flex-1 md:ml-64">
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center h-16">
-              {/* Mobile Menu Button */}
-              <button
-                id="sidebarToggle"
-                className="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100"
-                onClick={() => setSidebarOpen(!sidebarOpen)}>
-                <Menu className="h-5 w-5" />
-              </button>
+    <div className="flex-1 md:ml-64">
+  <header className="bg-white shadow-sm sticky top-0 z-10">
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="flex justify-between items-center h-16">
+        {/* Mobile Menu Button */}
+        <button
+          id="sidebarToggle"
+          className="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100"
+          onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <Menu className="h-5 w-5" />
+        </button>
 
-              <div className="flex items-center space-x-4 ml-auto">
+        <div className="flex items-center space-x-4 ml-auto">
+          <button
+            onClick={handleCreate}
+            className="md:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors shadow-sm flex items-center justify-center">
+            <Plus className="h-5 w-5" />
+          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center focus:outline-none hover:bg-blue-200 transition-colors"
+              aria-label="User menu"
+              aria-expanded={dropdownOpen}>
+              <span className="text-xs font-medium text-blue-600">
+                JD
+              </span>
+            </button>
+
+            {dropdownOpen && (
+              <div
+                id="dropdownMenu"
+                className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-30 py-1"
+                onMouseLeave={() => setDropdownOpen(false)}>
+       
                 <button
-                  onClick={handleCreate}
-                  className="md:hidden bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors shadow-sm flex items-center justify-center">
-                  <Plus className="h-5 w-5" />
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2 transition-colors">
+                  <LogOut className="h-4 w-4 text-gray-500" />
+                  <span>Sign out</span>
                 </button>
-
-                <div className="relative">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center focus:outline-none">
-                    <span className="text-xs font-medium text-blue-600">
-                      JD
-                    </span>
-                  </button>
-
-                  {dropdownOpen && (
-                    <div
-                      id="dropdownMenu"
-                      className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-30">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
-            </div>
+            )}
           </div>
-        </header>
-
-        <main className="p-w md:p-4 rounded-md">
-          <Outlet />
-        </main>
+        </div>
       </div>
+    </div>
+  </header>
+
+  <main className="p-w md:p-4 rounded-md">
+    <Outlet />
+  </main>
+</div>
 
       <NewDesignDialog
         open={isDialogOpen}

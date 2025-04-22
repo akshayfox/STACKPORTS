@@ -52,6 +52,7 @@ const CanvasElement: React.FC<CanvasElementProps> = ({
     color: element.style.color,
     borderRadius: element.style.borderRadius ? `${element.style.borderRadius}%` : "0%",
     fontFamily:element.style.fontFamily ,
+    fontWeight:element.style.fontWeight 
   }), [transformStyle, element.style]);
 
 

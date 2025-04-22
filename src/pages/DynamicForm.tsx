@@ -200,9 +200,8 @@ const ClientForm: React.FC = () => {
 
   // Create initial values and validation schema
   const { initialValues, validationSchema } = useMemo(() => {
-    const values: Record<string, string> = {};
+    const values: Record<string, string> = { group: "" }; // Initialize group field
     const schema: Record<string, any> = {};
-
     dynamicElements.forEach((element) => {
       values[element.id] = element.content || "";
       if (element.metadata?.isRequired && element.type !== "image") {
@@ -211,6 +210,9 @@ const ClientForm: React.FC = () => {
         );
       }
     });
+
+    // Add validation for group if needed
+    schema.group = Yup.string()
 
     return {
       initialValues: values,
@@ -221,13 +223,15 @@ const ClientForm: React.FC = () => {
   const formik = useFormik({
     initialValues,
     validationSchema,
+
     onSubmit: async (values) => {
       if (!activeTemplate) return;
-
       setFormSubmitting(true);
       try {
-        Object.entries(values).forEach(([id, value]) => {
-          updateElement(id, { content: value });
+        dynamicElements.forEach((element) => {
+          if (values[element.id] !== undefined) {
+            updateElement(element.id, { content: values[element.id] });
+          }
         });
         const thumbnail = await captureCanvas(canvasRef, activeTemplate);
         const base64Data = thumbnail.split(",")[1];
@@ -243,7 +247,7 @@ const ClientForm: React.FC = () => {
           canvasSize: activeTemplate?.canvasSize || { width: 800, height: 600 },
           elements: activeTemplate?.elements || [],
           client: clientId,
-          group: values.group,
+          group: values.group?values.group:undefined, // Now correctly passed
         };
         const formData = new FormData();
         formData.append("thumbnail", blob, "thumbnail.png"); // <-- Important!
@@ -258,7 +262,8 @@ const ClientForm: React.FC = () => {
             },
           }
         );
-        if (response.status === 200) {
+        if (response) {
+          setActiveTemplate(null); // ✅ Reset template
           navigate(-1);
         } else {
           throw new Error("Failed to save form data");
@@ -330,7 +335,7 @@ const ClientForm: React.FC = () => {
       <button
         type="submit"
         className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-        disabled={submitting || !formik.isValid}>
+        disabled={submitting }>
         {submitting ? (
           <>
             <Loader className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
@@ -387,8 +392,10 @@ const ClientForm: React.FC = () => {
                         <select
                           id="group"
                           name="group"
-                          className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200"
-                          defaultValue="">
+                          value={formik.values.group}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200">
                           <option value="" disabled>
                             Select a group
                           </option>
@@ -398,10 +405,13 @@ const ClientForm: React.FC = () => {
                             </option>
                           ))}
                         </select>
+                        {formik.touched.group && formik.errors.group && (
+                          <div className="mt-1 text-sm text-red-600">
+                            {formik.errors.group}
+                          </div>
+                        )}
                       </div>
                     ) : null}
-
-                    {/* Dynamic elements */}
                     {dynamicElements.map((element) => (
                       <div
                         key={element.id}
