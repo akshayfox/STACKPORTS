@@ -197,8 +197,6 @@ const ClientForm: React.FC = () => {
     () => activeTemplate?.elements.filter((el) => el.dynamic) || [],
     [activeTemplate]
   );
-  console.log(dynamicElements,'dynamicElements')
-
 
   // Create initial values and validation schema
   const { initialValues, validationSchema } = useMemo(() => {
@@ -212,10 +210,10 @@ const ClientForm: React.FC = () => {
         );
       }
     });
-  
+
     // Add validation for group if needed
-    schema.group = Yup.string().required("Group selection is required");
-  
+    schema.group = Yup.string()
+
     return {
       initialValues: values,
       validationSchema: Yup.object().shape(schema),
@@ -225,7 +223,7 @@ const ClientForm: React.FC = () => {
   const formik = useFormik({
     initialValues,
     validationSchema,
-    
+
     onSubmit: async (values) => {
       if (!activeTemplate) return;
       setFormSubmitting(true);
@@ -249,7 +247,7 @@ const ClientForm: React.FC = () => {
           canvasSize: activeTemplate?.canvasSize || { width: 800, height: 600 },
           elements: activeTemplate?.elements || [],
           client: clientId,
-          group: values.group, // Now correctly passed
+          group: values.group?values.group:undefined, // Now correctly passed
         };
         const formData = new FormData();
         formData.append("thumbnail", blob, "thumbnail.png"); // <-- Important!
@@ -264,7 +262,8 @@ const ClientForm: React.FC = () => {
             },
           }
         );
-        if (response.status === 200) {
+        if (response) {
+          setActiveTemplate(null); // ✅ Reset template
           navigate(-1);
         } else {
           throw new Error("Failed to save form data");
@@ -276,7 +275,6 @@ const ClientForm: React.FC = () => {
       }
     },
   });
-  console.log(formik.values,'VALUESS')
 
   const { data: groupsByClient = [], isLoading: groupsByClientLoading } =
     useQuery({
@@ -337,7 +335,7 @@ const ClientForm: React.FC = () => {
       <button
         type="submit"
         className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-        disabled={submitting || !formik.isValid}>
+        disabled={submitting }>
         {submitting ? (
           <>
             <Loader className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
@@ -392,27 +390,26 @@ const ClientForm: React.FC = () => {
                           Select Group
                         </label>
                         <select
-  id="group"
-  name="group"
-  value={formik.values.group}
-  onChange={formik.handleChange}
-  onBlur={formik.handleBlur}
-  className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200"
->
-  <option value="" disabled>
-    Select a group
-  </option>
-  {groupOptions.map((group: any) => (
-    <option key={group.value} value={group.value}>
-      {group.label}
-    </option>
-  ))}
-</select>
-{formik.touched.group && formik.errors.group && (
-  <div className="mt-1 text-sm text-red-600">
-    {formik.errors.group}
-  </div>
-)}
+                          id="group"
+                          name="group"
+                          value={formik.values.group}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          className="block w-full rounded-md border-gray-300 border px-3 py-2 bg-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors duration-200">
+                          <option value="" disabled>
+                            Select a group
+                          </option>
+                          {groupOptions.map((group: any) => (
+                            <option key={group.value} value={group.value}>
+                              {group.label}
+                            </option>
+                          ))}
+                        </select>
+                        {formik.touched.group && formik.errors.group && (
+                          <div className="mt-1 text-sm text-red-600">
+                            {formik.errors.group}
+                          </div>
+                        )}
                       </div>
                     ) : null}
                     {dynamicElements.map((element) => (

@@ -54,7 +54,7 @@ const PropertyPanel: React.FC = () => {
 
   const handleDynamicToggle = (checked: boolean) => {
     setIsDynamic(checked);
-    const field = fieldLabel || `field_${Date.now()}`;
+    const field = fieldLabel || "";
     updateElement(selectedElement.id, {
       dynamic: checked,
       fieldName: checked ? field : undefined,
@@ -188,6 +188,28 @@ const PropertyPanel: React.FC = () => {
               max="200"
             />
           </div>
+       
+          <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Font Weight
+  </label>
+  <select
+    value={selectedElement.style.fontWeight}
+    onChange={(e) => handleStyleChange("fontWeight", e.target.value)}
+    className="w-full px-2 py-1 text-sm border rounded focus:ring-blue-500 focus:border-blue-500"
+  >
+    <option value="100">Thin</option>
+    <option value="200">Extra Light</option>
+    <option value="300">Light</option>
+    <option value="400">Normal</option>
+    <option value="500">Medium</option>
+    <option value="600">Semi Bold</option>
+    <option value="700">Bold</option>
+    <option value="800">Extra Bold</option>
+    <option value="900">Black</option>
+  </select>
+</div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Color

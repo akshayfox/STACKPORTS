@@ -20,7 +20,9 @@ interface ElementStyle {
   fontSize?: number;
   color?: string;
   path?: string;
-  textAlign?:string
+  textAlign?: string;
+  fontWeight?: string;     // e.g., "normal", "bold", "500"
+  borderRadius?: number;   // value in pixels
 }
 
 interface EditorElement {
@@ -101,8 +103,8 @@ const Toolbar: React.FC = () => {
       content: isDynamic ? `{${fieldName}}` : "Double click to edit",
       style: {
         ...DEFAULT_POSITION,
-        width: 200,
-        height: 50,
+        width: 180,
+        height: 30,
         rotation: 0,
         fontSize: 16,
         color: isDynamic ? "#FF5722" : "#000000", // Different color for dynamic fields
