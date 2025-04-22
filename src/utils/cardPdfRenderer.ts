@@ -35,6 +35,9 @@ export async function renderCardToPDF(card: CardData, pdf?: jsPDF): Promise<jsPD
       orientation: width > height ? "landscape" : "portrait",
       unit: "pt",
       format: [width, height],
+      precision: 4,
+      putOnlyUsedFonts: true,
+      compress: false
     });
   } else {
     doc.addPage([width, height], width > height ? "landscape" : "portrait");
